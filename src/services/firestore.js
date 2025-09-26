@@ -128,7 +128,7 @@ function extractPublicIdFromUrl(cloudinaryUrl) {
 // Function to delete images from Cloudinary
 async function deleteCloudinaryImages(publicIds) {
   // If you have a backend server running
-  const BACKEND_URL = 'http://localhost:4000'; // Adjust port if different
+  const BACKEND_URL = 'https://househunt-server.onrender.com'; // Adjust port if different
   
   for (const publicId of publicIds) {
     try {
