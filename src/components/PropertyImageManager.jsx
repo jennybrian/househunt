@@ -144,118 +144,99 @@ const PropertyImageManager = () => {
     }));
   };
 
+  // Common input styles
+  const inputStyle = {
+    width: "100%",
+    padding: "10px 14px",
+    borderRadius: 8,
+    border: "1.5px solid #b2dfdb",
+    fontSize: 14,
+    outline: "none",
+    transition: "border 0.2s",
+    boxSizing: "border-box",
+  };
+
+  const labelStyle = {
+    fontWeight: 600,
+    color: "#0d4d4d",
+    marginBottom: 6,
+    display: "block",
+    fontSize: 14,
+  };
+
   return (
     <div
       style={{
-        maxWidth: 520,
-        margin: "0 auto",
+        width: "100%",
+        maxWidth: "100%",
+        margin: "0",
         background: "#fff",
-        borderRadius: 20,
-        boxShadow: "0 4px 24px rgba(0,0,0,0.10)",
-        padding: "32px 28px",
-        marginTop: 24,
+        borderRadius: 16,
+        boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+        padding: "24px",
+        boxSizing: "border-box",
+        overflow: "hidden",
       }}
     >
       <h2
         style={{
           color: "#0d4d4d",
           fontWeight: 700,
-          marginBottom: 18,
+          fontSize: 22,
+          marginBottom: 20,
           textAlign: "center",
           letterSpacing: "-0.5px",
+          margin: "0 0 20px 0",
         }}
       >
         Add New Property with Images
       </h2>
-      <div style={{ marginBottom: 18 }}>
-        <label
-          style={{
-            fontWeight: 600,
-            color: "#0d4d4d",
-            marginBottom: 6,
-            display: "block",
-          }}
-        >
-          Property Title *
-        </label>
+
+      {/* Property Title */}
+      <div style={{ marginBottom: 16 }}>
+        <label style={labelStyle}>Property Title *</label>
         <input
           type="text"
           value={propertyData.title}
           onChange={(e) => handleInputChange("title", e.target.value)}
           placeholder="e.g., Cozy 2BR near CBD"
-          style={{
-            width: "100%",
-            padding: "10px 14px",
-            borderRadius: 8,
-            border: "1.5px solid #b2dfdb",
-            fontSize: 16,
-            outline: "none",
-            transition: "border 0.2s",
-            marginBottom: 4,
-          }}
+          style={inputStyle}
           onFocus={(e) => (e.target.style.border = "1.5px solid #00bfae")}
           onBlur={(e) => (e.target.style.border = "1.5px solid #b2dfdb")}
           required
         />
       </div>
 
-      <div style={{ marginBottom: 18 }}>
-        <label
-          style={{
-            fontWeight: 600,
-            color: "#0d4d4d",
-            marginBottom: 6,
-            display: "block",
-          }}
-        >
-          Address *
-        </label>
+      {/* Address */}
+      <div style={{ marginBottom: 16 }}>
+        <label style={labelStyle}>Address *</label>
         <input
           type="text"
           value={propertyData.address}
           onChange={(e) => handleInputChange("address", e.target.value)}
           placeholder="e.g., Mukoma Road, Nairobi"
-          style={{
-            width: "100%",
-            padding: "10px 14px",
-            borderRadius: 8,
-            border: "1.5px solid #b2dfdb",
-            fontSize: 16,
-            outline: "none",
-            transition: "border 0.2s",
-            marginBottom: 4,
-          }}
+          style={inputStyle}
           onFocus={(e) => (e.target.style.border = "1.5px solid #00bfae")}
           onBlur={(e) => (e.target.style.border = "1.5px solid #b2dfdb")}
           required
         />
       </div>
 
-      <div style={{ display: "flex", gap: "10px", marginBottom: "18px" }}>
-        <div style={{ flex: 1 }}>
-          <label
-            style={{
-              fontWeight: 600,
-              color: "#0d4d4d",
-              marginBottom: 6,
-              display: "block",
-            }}
-          >
-            Type
-          </label>
+      {/* Type and Price Row */}
+      <div 
+        style={{ 
+          display: "flex", 
+          gap: "12px", 
+          marginBottom: "16px",
+          flexWrap: "wrap"
+        }}
+      >
+        <div style={{ flex: "1 1 150px", minWidth: "150px" }}>
+          <label style={labelStyle}>Type</label>
           <select
             value={propertyData.type}
             onChange={(e) => handleInputChange("type", e.target.value)}
-            style={{
-              width: "100%",
-              padding: "10px 14px",
-              borderRadius: 8,
-              border: "1.5px solid #b2dfdb",
-              fontSize: 16,
-              outline: "none",
-              transition: "border 0.2s",
-              marginBottom: 4,
-            }}
+            style={inputStyle}
           >
             <option value="">Select type</option>
             <option value="Bedsitter">Bedsitter</option>
@@ -272,133 +253,81 @@ const PropertyImageManager = () => {
           </select>
         </div>
 
-        <div style={{ flex: 1 }}>
-          <label
-            style={{
-              fontWeight: 600,
-              color: "#0d4d4d",
-              marginBottom: 6,
-              display: "block",
-            }}
-          >
-            Price (KSH) *
-          </label>
+        <div style={{ flex: "1 1 150px", minWidth: "150px" }}>
+          <label style={labelStyle}>Price (KSH) *</label>
           <input
             type="number"
             value={propertyData.price}
             onChange={(e) => handleInputChange("price", e.target.value)}
             placeholder="35000"
-            style={{
-              width: "100%",
-              padding: "10px 14px",
-              borderRadius: 8,
-              border: "1.5px solid #b2dfdb",
-              fontSize: 16,
-              outline: "none",
-              transition: "border 0.2s",
-              marginBottom: 4,
-            }}
+            style={inputStyle}
+            onFocus={(e) => (e.target.style.border = "1.5px solid #00bfae")}
+            onBlur={(e) => (e.target.style.border = "1.5px solid #b2dfdb")}
             required
           />
         </div>
       </div>
 
-      <div style={{ marginBottom: "18px" }}>
-        <label
-          style={{
-            fontWeight: 600,
-            color: "#0d4d4d",
-            marginBottom: 6,
-            display: "block",
-          }}
-        >
-          Landlord Contact
-        </label>
+      {/* Landlord Contact */}
+      <div style={{ marginBottom: 16 }}>
+        <label style={labelStyle}>Landlord Contact</label>
         <input
           type="text"
           value={propertyData.landlordContact}
           onChange={(e) => handleInputChange("landlordContact", e.target.value)}
           placeholder="+254700000000"
-          style={{
-            width: "100%",
-            padding: "10px 14px",
-            borderRadius: 8,
-            border: "1.5px solid #b2dfdb",
-            fontSize: 16,
-            outline: "none",
-            transition: "border 0.2s",
-            marginBottom: 4,
-          }}
+          style={inputStyle}
+          onFocus={(e) => (e.target.style.border = "1.5px solid #00bfae")}
+          onBlur={(e) => (e.target.style.border = "1.5px solid #b2dfdb")}
         />
       </div>
 
-      <div style={{ marginBottom: "24px" }}>
-        <label
-          style={{
-            fontWeight: 600,
-            color: "#0d4d4d",
-            marginBottom: 6,
-            display: "block",
-          }}
-        >
-          Notes
-        </label>
+      {/* Notes */}
+      <div style={{ marginBottom: 20 }}>
+        <label style={labelStyle}>Notes</label>
         <textarea
           value={propertyData.notes}
           onChange={(e) => handleInputChange("notes", e.target.value)}
           placeholder="Additional details about the property..."
           rows={3}
           style={{
-            width: "100%",
-            padding: "10px 14px",
-            borderRadius: 8,
-            border: "1.5px solid #b2dfdb",
-            fontSize: 16,
-            outline: "none",
-            transition: "border 0.2s",
-            marginBottom: 4,
+            ...inputStyle,
+            resize: "vertical",
+            minHeight: "80px",
           }}
+          onFocus={(e) => (e.target.style.border = "1.5px solid #00bfae")}
+          onBlur={(e) => (e.target.style.border = "1.5px solid #b2dfdb")}
         />
       </div>
 
       {/* Image Upload Section */}
-      <div style={{ marginBottom: "24px" }}>
-        <label
-          style={{
-            fontWeight: 600,
-            color: "#0d4d4d",
-            marginBottom: 6,
-            display: "block",
-          }}
-        >
-          Property Images *
-        </label>
+      <div style={{ marginBottom: 20 }}>
+        <label style={labelStyle}>Property Images *</label>
         <input
           type="file"
           multiple
           accept="image/*"
           onChange={handleFileSelect}
           style={{
-            display: "block",
-            marginTop: 6,
-            marginBottom: 4,
-            padding: "10px 14px",
-            borderRadius: 8,
-            border: "1.5px solid #b2dfdb",
-            fontSize: 16,
-            outline: "none",
-            transition: "border 0.2s",
+            ...inputStyle,
+            fontSize: 13,
+            cursor: "pointer",
           }}
         />
-        <small style={{ color: "#888" }}>
+        <small style={{ color: "#666", fontSize: 12, display: "block", marginTop: 4 }}>
           Select multiple images (JPEG, PNG, WebP). Max 10MB per file.
         </small>
       </div>
 
       {/* Selected Files Preview */}
       {selectedFiles.length > 0 && (
-        <div style={{ marginBottom: "24px" }}>
-          <h3 style={{ fontWeight: 600, color: "#0d4d4d", marginBottom: 12 }}>
+        <div style={{ marginBottom: 20 }}>
+          <h3 style={{ 
+            fontWeight: 600, 
+            color: "#0d4d4d", 
+            marginBottom: 12,
+            fontSize: 16,
+          }}>
             Selected Images ({selectedFiles.length})
           </h3>
           {selectedFiles.map((file, index) => (
@@ -408,29 +337,39 @@ const PropertyImageManager = () => {
                 display: "flex",
                 alignItems: "center",
                 marginBottom: 8,
-                padding: 8,
-                backgroundColor: "#f5f5f5",
-                borderRadius: 4,
+                padding: 10,
+                backgroundColor: "#f8fffe",
+                borderRadius: 8,
+                border: "1px solid #e0f2f1",
               }}
             >
-              <span style={{ flex: 1 }}>
+              <span 
+                style={{ 
+                  flex: 1, 
+                  fontSize: 13,
+                  wordBreak: "break-word",
+                  marginRight: 8,
+                }}
+              >
                 📷 {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
               </span>
               {uploading && (
                 <div
                   style={{
-                    width: "100px",
-                    backgroundColor: "#ddd",
-                    borderRadius: "4px",
+                    width: "80px",
+                    height: "6px",
+                    backgroundColor: "#e0f2f1",
+                    borderRadius: "3px",
+                    overflow: "hidden",
                   }}
                 >
                   <div
                     style={{
                       width: `${uploadProgress[index]}%`,
-                      height: "4px",
-                      backgroundColor: "#4CAF50",
-                      borderRadius: "4px",
-                      transition: "width 0.3s",
+                      height: "100%",
+                      backgroundColor: "#00bfae",
+                      borderRadius: "3px",
+                      transition: "width 0.3s ease",
                     }}
                   />
                 </div>
@@ -446,30 +385,42 @@ const PropertyImageManager = () => {
         disabled={uploading || selectedFiles.length === 0}
         style={{
           width: "100%",
-          padding: "14px",
-          fontSize: "18px",
-          fontWeight: "bold",
+          padding: "14px 20px",
+          fontSize: "16px",
+          fontWeight: "700",
           backgroundColor: uploading ? "#b2dfdb" : "#00bfae",
           color: "#fff",
           border: "none",
-          borderRadius: "10px",
+          borderRadius: "12px",
           cursor: uploading ? "not-allowed" : "pointer",
-          boxShadow: "0 2px 8px rgba(0,191,174,0.08)",
-          transition: "background 0.2s, transform 0.2s",
-          letterSpacing: "0.5px",
+          boxShadow: "0 4px 12px rgba(0,191,174,0.2)",
+          transition: "all 0.2s ease",
+          letterSpacing: "0.3px",
+          boxSizing: "border-box",
         }}
         onMouseOver={e => {
-          if (!uploading) e.currentTarget.style.backgroundColor = "#0d4d4d";
+          if (!uploading) {
+            e.currentTarget.style.backgroundColor = "#0d4d4d";
+            e.currentTarget.style.transform = "translateY(-1px)";
+          }
         }}
         onMouseOut={e => {
-          if (!uploading) e.currentTarget.style.backgroundColor = "#00bfae";
+          if (!uploading) {
+            e.currentTarget.style.backgroundColor = "#00bfae";
+            e.currentTarget.style.transform = "none";
+          }
         }}
       >
-        {uploading ? "🔄 Uploading Property..." : "Create Property"}
+        {uploading ? "Uploading Property..." : "Create Property"}
       </button>
 
       {uploading && (
-        <div style={{ marginTop: "10px", textAlign: "center", color: "#666" }}>
+        <div style={{ 
+          marginTop: 12, 
+          textAlign: "center", 
+          color: "#666",
+          fontSize: 14,
+        }}>
           Uploading {selectedFiles.length} images and saving to database...
         </div>
       )}

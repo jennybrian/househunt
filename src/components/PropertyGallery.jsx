@@ -250,131 +250,238 @@ const PropertyGallery = () => {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-      {/* === HEADING ROW (separate) === */}
-      <div style={{ marginBottom: 8 }}>
-        <h2 style={{ margin: 0, fontSize: 22 }}>Property Gallery ({properties.length})</h2>
-      </div>
-
-      {/* === BUTTONS ROW (separate, right aligned, wraps on small screens) === */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: 20, flexWrap: 'wrap' }}>
-        {!bulkDeleteMode ? (
-          <>
-            <button
-              onClick={loadProperties}
-              style={{
-                padding: "12px 28px",
-                backgroundColor: "#2196F3",
-                color: "#fff",
-                border: "none",
-                borderRadius: "20px",
-                fontWeight: 600,
-                fontSize: 16,
-                cursor: "pointer",
-                boxShadow: "0 2px 8px rgba(33,150,243,0.08)",
-                transition: "background 0.2s, transform 0.2s",
-                marginRight: 8,
-              }}
-              onMouseOver={e => e.currentTarget.style.backgroundColor = "#1565c0"}
-              onMouseOut={e => e.currentTarget.style.backgroundColor = "#2196F3"}
-            >
-              🔄 Refresh
-            </button>
-            <button 
-              onClick={toggleBulkMode}
-              style={{ 
-                padding: '12px 28px',
-                backgroundColor: '#ff9800',
-                color: 'white',
-                border: 'none',
-                borderRadius: '20px',
-                fontWeight: 600,
-                fontSize: 16,
-                cursor: 'pointer',
-                boxShadow: "0 2px 8px rgba(255,152,0,0.08)",
-                transition: "background 0.2s, transform 0.2s"
-              }}
-              onMouseOver={e => e.currentTarget.style.backgroundColor = "#e65100"}
-              onMouseOut={e => e.currentTarget.style.backgroundColor = "#ff9800"}
-            >
-              🗑️ Bulk Delete
-            </button>
-          </>
-        ) : (
-          <>
-            <span style={{ 
-              padding: '8px 12px',
-              backgroundColor: '#e3f2fd',
-              color: '#1976d2',
-              borderRadius: '4px',
-              fontSize: '14px'
-            }}>
-              {selectedProperties.length} selected
-            </span>
-            <button 
-              onClick={handleBulkDelete}
-              disabled={selectedProperties.length === 0}
-              style={{
-                padding: "12px 28px",
-                backgroundColor: selectedProperties.length > 0 ? "#f44336" : "#ccc",
-                color: "#fff",
-                border: "none",
-                borderRadius: "20px",
-                fontWeight: 600,
-                fontSize: 16,
-                cursor: selectedProperties.length > 0 ? "pointer" : "not-allowed",
-                boxShadow: "0 2px 8px rgba(244,67,54,0.08)",
-                transition: "background 0.2s, transform 0.2s",
-                marginLeft: 8,
-              }}
-              onMouseOver={e => {
-                if (selectedProperties.length > 0) e.currentTarget.style.backgroundColor = "#b71c1c";
-              }}
-              onMouseOut={e => {
-                if (selectedProperties.length > 0) e.currentTarget.style.backgroundColor = "#f44336";
-              }}
-            >
-              🗑️ Bulk Delete
-            </button>
-            <button 
-              onClick={toggleBulkMode}
-              style={{ 
-                padding: '12px 28px', 
-                backgroundColor: '#666', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '20px',
-                fontWeight: 600,
-                fontSize: 16,
-                fontFamily: "sans-serif",
-                cursor: 'pointer'
-              }}
-            >
-              Cancel
-            </button>
-          </>
-        )}
+      {/* Header with Title and Action Buttons */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: 20,
+        flexWrap: 'wrap',
+        gap: '12px'
+      }}>
+        <h2 style={{ 
+          margin: 0, 
+          fontSize: 22,
+          color: '#0d4d4d',
+          fontWeight: 700
+        }}>
+          Property Gallery ({filteredProperties.length})
+        </h2>
+        
+        <div style={{ 
+          display: 'flex', 
+          gap: '8px', 
+          alignItems: 'center',
+          flexWrap: 'wrap'
+        }}>
+          {!bulkDeleteMode ? (
+            <>
+              <button
+                onClick={loadProperties}
+                style={{
+                  padding: "6px 14px",
+                  backgroundColor: "#2196F3",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  fontWeight: 500,
+                  fontSize: 13,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  boxShadow: "0 1px 3px rgba(33,150,243,0.3)",
+                  transition: "all 0.2s ease",
+                  minHeight: "30px"
+                }}
+                onMouseOver={e => {
+                  e.currentTarget.style.backgroundColor = "#1565c0";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                  e.currentTarget.style.boxShadow = "0 2px 6px rgba(33,150,243,0.4)";
+                }}
+                onMouseOut={e => {
+                  e.currentTarget.style.backgroundColor = "#2196F3";
+                  e.currentTarget.style.transform = "none";
+                  e.currentTarget.style.boxShadow = "0 1px 3px rgba(33,150,243,0.3)";
+                }}
+              >
+                🔄 Refresh
+              </button>
+              <button 
+                onClick={toggleBulkMode}
+                style={{ 
+                  padding: '6px 14px',
+                  backgroundColor: '#ff9800',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontWeight: 500,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  boxShadow: "0 1px 3px rgba(255,152,0,0.3)",
+                  transition: "all 0.2s ease",
+                  minHeight: "30px"
+                }}
+                onMouseOver={e => {
+                  e.currentTarget.style.backgroundColor = "#e65100";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                  e.currentTarget.style.boxShadow = "0 2px 6px rgba(255,152,0,0.4)";
+                }}
+                onMouseOut={e => {
+                  e.currentTarget.style.backgroundColor = "#ff9800";
+                  e.currentTarget.style.transform = "none";
+                  e.currentTarget.style.boxShadow = "0 1px 3px rgba(255,152,0,0.3)";
+                }}
+              >
+                🗑️ Bulk Delete
+              </button>
+            </>
+          ) : (
+            <>
+              <span style={{ 
+                padding: '4px 10px',
+                backgroundColor: '#e3f2fd',
+                color: '#1976d2',
+                borderRadius: '4px',
+                fontSize: '12px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                minHeight: '22px'
+              }}>
+                📊 {selectedProperties.length} selected
+              </span>
+              <button 
+                onClick={handleBulkDelete}
+                disabled={selectedProperties.length === 0}
+                style={{
+                  padding: "6px 14px",
+                  backgroundColor: selectedProperties.length > 0 ? "#f44336" : "#ccc",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  fontWeight: 500,
+                  fontSize: 13,
+                  cursor: selectedProperties.length > 0 ? "pointer" : "not-allowed",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  boxShadow: selectedProperties.length > 0 ? "0 1px 3px rgba(244,67,54,0.3)" : "none",
+                  transition: "all 0.2s ease",
+                  opacity: selectedProperties.length > 0 ? 1 : 0.6,
+                  minHeight: "30px"
+                }}
+                onMouseOver={e => {
+                  if (selectedProperties.length > 0) {
+                    e.currentTarget.style.backgroundColor = "#b71c1c";
+                    e.currentTarget.style.transform = "translateY(-1px)";
+                    e.currentTarget.style.boxShadow = "0 2px 6px rgba(244,67,54,0.4)";
+                  }
+                }}
+                onMouseOut={e => {
+                  if (selectedProperties.length > 0) {
+                    e.currentTarget.style.backgroundColor = "#f44336";
+                    e.currentTarget.style.transform = "none";
+                    e.currentTarget.style.boxShadow = "0 1px 3px rgba(244,67,54,0.3)";
+                  }
+                }}
+              >
+                🗑️ Delete ({selectedProperties.length})
+              </button>
+              <button 
+                onClick={toggleBulkMode}
+                style={{ 
+                  padding: '6px 14px', 
+                  backgroundColor: '#666', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '6px',
+                  fontWeight: 500,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  transition: "all 0.2s ease",
+                  minHeight: "30px"
+                }}
+                onMouseOver={e => {
+                  e.currentTarget.style.backgroundColor = "#424242";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                }}
+                onMouseOut={e => {
+                  e.currentTarget.style.backgroundColor = "#666";
+                  e.currentTarget.style.transform = "none";
+                }}
+              >
+                ❌ Cancel
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div style={{ marginBottom: 24, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+      <div style={{ 
+        marginBottom: 24, 
+        display: 'flex', 
+        flexWrap: 'wrap', 
+        gap: 12,
+        padding: '16px',
+        backgroundColor: '#f8fffe',
+        borderRadius: '8px',
+        border: '1px solid #e0f2f1'
+      }}>
         <input
           type="text"
           placeholder="Keyword (title, notes, address)"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc', minWidth: 180 }}
+          style={{ 
+            padding: '8px 12px', 
+            borderRadius: 6, 
+            border: '1px solid #ccc', 
+            minWidth: 180,
+            fontSize: 14,
+            outline: 'none',
+            transition: 'border 0.2s'
+          }}
+          onFocus={e => e.target.style.border = '1px solid #00bfae'}
+          onBlur={e => e.target.style.border = '1px solid #ccc'}
         />
         <input
           type="text"
           placeholder="Location"
           value={filterLocation}
           onChange={e => setFilterLocation(e.target.value)}
-          style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc', minWidth: 120 }}
+          style={{ 
+            padding: '8px 12px', 
+            borderRadius: 6, 
+            border: '1px solid #ccc', 
+            minWidth: 120,
+            fontSize: 14,
+            outline: 'none',
+            transition: 'border 0.2s'
+          }}
+          onFocus={e => e.target.style.border = '1px solid #00bfae'}
+          onBlur={e => e.target.style.border = '1px solid #ccc'}
         />
         <select
           value={filterType}
           onChange={e => setFilterType(e.target.value)}
-          style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc', minWidth: 120 }}
+          style={{ 
+            padding: '8px 12px', 
+            borderRadius: 6, 
+            border: '1px solid #ccc', 
+            minWidth: 120,
+            fontSize: 14,
+            outline: 'none',
+            backgroundColor: 'white'
+          }}
         >
           <option value="">All Types</option>
           <option value="Bedsitter">Bedsitter</option>
@@ -392,7 +499,15 @@ const PropertyGallery = () => {
         <select
           value={filterAvailability}
           onChange={e => setFilterAvailability(e.target.value)}
-          style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc', minWidth: 120 }}
+          style={{ 
+            padding: '8px 12px', 
+            borderRadius: 6, 
+            border: '1px solid #ccc', 
+            minWidth: 120,
+            fontSize: 14,
+            outline: 'none',
+            backgroundColor: 'white'
+          }}
         >
           <option value="">All</option>
           <option value="Available">Available</option>
@@ -403,14 +518,34 @@ const PropertyGallery = () => {
           placeholder="Min Price"
           value={filterPriceMin}
           onChange={e => setFilterPriceMin(e.target.value)}
-          style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc', width: 100 }}
+          style={{ 
+            padding: '8px 12px', 
+            borderRadius: 6, 
+            border: '1px solid #ccc', 
+            width: 100,
+            fontSize: 14,
+            outline: 'none',
+            transition: 'border 0.2s'
+          }}
+          onFocus={e => e.target.style.border = '1px solid #00bfae'}
+          onBlur={e => e.target.style.border = '1px solid #ccc'}
         />
         <input
           type="number"
           placeholder="Max Price"
           value={filterPriceMax}
           onChange={e => setFilterPriceMax(e.target.value)}
-          style={{ padding: 8, borderRadius: 6, border: '1px solid #ccc', width: 100 }}
+          style={{ 
+            padding: '8px 12px', 
+            borderRadius: 6, 
+            border: '1px solid #ccc', 
+            width: 100,
+            fontSize: 14,
+            outline: 'none',
+            transition: 'border 0.2s'
+          }}
+          onFocus={e => e.target.style.border = '1px solid #00bfae'}
+          onBlur={e => e.target.style.border = '1px solid #ccc'}
         />
       </div>
 
@@ -518,7 +653,7 @@ const PropertyGallery = () => {
               </h3>
               
               <p style={{ margin: '4px 0', color: '#666', fontSize: '14px' }}>
-                🗺️ {property.address}
+                📍 {property.address}
               </p>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', margin: '8px 0' }}>
@@ -538,7 +673,7 @@ const PropertyGallery = () => {
 
               {property.landlordContact && (
                 <p style={{ margin: '4px 0', fontSize: '14px' }}>
-                  ☎️ {property.landlordContact}
+                  📱 {property.landlordContact}
                 </p>
               )}
 
