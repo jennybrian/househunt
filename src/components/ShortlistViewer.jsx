@@ -253,11 +253,12 @@ const ShortlistViewer = ({ shareToken }) => {
               alignItems: 'center',
               justifyContent: 'center',
               background: 'rgba(0,0,0,0.05)',
-              borderRadius: '24px',
-              boxShadow: '0 8px 48px rgba(0,0,0,0.35)'
+              borderRadius: '16px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.35)'
             }}
             onClick={e => e.stopPropagation()}
           >
+            {/* Previous Button */}
             <button
               onClick={() =>
                 setImageGallery(g => ({
@@ -267,34 +268,50 @@ const ShortlistViewer = ({ shareToken }) => {
               }
               style={{
                 position: 'absolute',
-                left: 16,
+                left: window.innerWidth > 768 ? 20 : 8,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                background: 'rgba(0,0,0,0.5)',
+                background: 'rgba(0,0,0,0.7)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '50%',
-                width: 56,
-                height: 56,
-                fontSize: 36,
+                width: window.innerWidth > 768 ? 48 : 36,
+                height: window.innerWidth > 768 ? 48 : 36,
+                fontSize: window.innerWidth > 768 ? 24 : 18,
                 cursor: 'pointer',
-                zIndex: 1
+                zIndex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.7)';
+                e.currentTarget.style.transform = 'translateY(-50%)';
               }}
               title="Previous"
             >
               ‹
             </button>
+
+            {/* Main Image */}
             <img
               src={imageGallery.images[imageGallery.index]}
               alt={`Property image ${imageGallery.index + 1}`}
               style={{
-                maxWidth: '85vw',
-                maxHeight: '85vh',
-                borderRadius: '18px',
-                boxShadow: '0 8px 48px rgba(0,0,0,0.45)',
+                maxWidth: window.innerWidth > 768 ? '80vw' : '85vw',
+                maxHeight: window.innerWidth > 768 ? '80vh' : '75vh',
+                borderRadius: '8px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
                 background: '#fff'
               }}
             />
+
+            {/* Next Button */}
             <button
               onClick={() =>
                 setImageGallery(g => ({
@@ -304,42 +321,86 @@ const ShortlistViewer = ({ shareToken }) => {
               }
               style={{
                 position: 'absolute',
-                right: 16,
+                right: window.innerWidth > 768 ? 20 : 8,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                background: 'rgba(0,0,0,0.5)',
+                background: 'rgba(0,0,0,0.7)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '50%',
-                width: 56,
-                height: 56,
-                fontSize: 36,
+                width: window.innerWidth > 768 ? 48 : 36,
+                height: window.innerWidth > 768 ? 48 : 36,
+                fontSize: window.innerWidth > 768 ? 24 : 18,
                 cursor: 'pointer',
-                zIndex: 1
+                zIndex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.7)';
+                e.currentTarget.style.transform = 'translateY(-50%)';
               }}
               title="Next"
             >
               ›
             </button>
+
+            {/* Close Button */}
             <button
               onClick={() => setImageGallery({ images: [], index: 0 })}
               style={{
                 position: 'absolute',
-                top: 24,
-                right: 24,
+                top: window.innerWidth > 768 ? 20 : 10,
+                right: window.innerWidth > 768 ? 20 : 10,
                 backgroundColor: 'rgba(0,0,0,0.7)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '50%',
-                width: '56px',
-                height: '56px',
-                fontSize: '32px',
-                cursor: 'pointer'
+                width: window.innerWidth > 768 ? 40 : 32,
+                height: window.innerWidth > 768 ? 40 : 32,
+                fontSize: window.innerWidth > 768 ? 20 : 16,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(244,67,54,0.8)';
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.7)';
+                e.currentTarget.style.transform = 'none';
               }}
               title="Close"
             >
               ×
             </button>
+
+            {/* Image Counter */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: window.innerWidth > 768 ? 20 : 10,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                color: 'white',
+                padding: '6px 12px',
+                borderRadius: '16px',
+                fontSize: '14px',
+                fontWeight: 500
+              }}
+            >
+              {imageGallery.index + 1} of {imageGallery.images.length}
+            </div>
           </div>
         </div>
       )}
