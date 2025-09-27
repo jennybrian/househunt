@@ -25,7 +25,6 @@ const PropertyGallery = () => {
     loadProperties();
   }, []);
 
-  // On mount, load shortlist from localStorage
   useEffect(() => {
     const shortlistIds = JSON.parse(localStorage.getItem(LOCAL_KEY) || "[]");
     setShortlist(shortlistIds);
@@ -35,22 +34,12 @@ const PropertyGallery = () => {
     try {
       setLoading(true);
       const propertiesData = await getProperties();
-      // Sort by createdAt descending (most recent first)
       const sortedProperties = propertiesData.sort((a, b) => {
-        // Firestore timestamps may be objects with a toDate() method
         const aDate = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
         const bDate = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
         return bDate - aDate;
       });
       setProperties(sortedProperties);
-      console.log('📊 Loaded properties with structure:', sortedProperties.map(p => ({
-        id: p.id,
-        title: p.title,
-        photos: p.photos,
-        imageDetails: p.imageDetails,
-        hasPhotos: !!p.photos,
-        photoCount: p.photos?.length || 0
-      })));
     } catch (error) {
       console.error('Error loading properties:', error);
       alert('Failed to load properties');
@@ -68,14 +57,10 @@ const PropertyGallery = () => {
 
     try {
       await deleteProperty(deleteConfirmation.id);
-      
-      // Remove from local state immediately for better UX
       setProperties(prev => prev.filter(p => p.id !== deleteConfirmation.id));
-      
       setDeleteConfirmation(null);
-      console.log('✅ Property deleted successfully');
     } catch (error) {
-      console.error('❌ Error deleting property:', error);
+      console.error('Error deleting property:', error);
       alert(`Failed to delete property: ${error.message}`);
     }
   };
@@ -101,17 +86,11 @@ const PropertyGallery = () => {
 
     if (confirmDelete) {
       try {
-        console.log('Starting bulk delete for properties:', selectedProperties);
-        
-        // Use the enhanced bulk delete function
         const results = await deleteMultipleProperties(selectedProperties);
-        
-        // Check results
         const successful = results.filter(r => r.success);
         const failed = results.filter(r => !r.success);
         
         if (successful.length > 0) {
-          // Remove successfully deleted properties from local state
           const successfulIds = successful.map(r => r.id);
           setProperties(prev => 
             prev.filter(p => !successfulIds.includes(p.id))
@@ -121,17 +100,13 @@ const PropertyGallery = () => {
         setSelectedProperties([]);
         setBulkDeleteMode(false);
         
-        // Show results to user
         if (failed.length === 0) {
-          console.log(`✅ All ${successful.length} properties deleted successfully`);
           alert(`Successfully deleted ${successful.length} properties and their images.`);
         } else {
-          console.log(`⚠️ Bulk delete completed: ${successful.length} successful, ${failed.length} failed`);
           alert(`Bulk delete completed:\n- ${successful.length} properties deleted successfully\n- ${failed.length} properties failed to delete`);
         }
-        
       } catch (error) {
-        console.error('❌ Error during bulk delete:', error);
+        console.error('Error during bulk delete:', error);
         alert(`Failed to complete bulk delete: ${error.message}`);
       }
     }
@@ -152,8 +127,6 @@ const PropertyGallery = () => {
 
   const formatDate = (timestamp) => {
     if (!timestamp) return 'Unknown date';
-    
-    // Handle Firestore timestamp
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleDateString('en-KE');
   };
@@ -172,7 +145,6 @@ const PropertyGallery = () => {
     }
   };
 
-  // Add to shortlist handler
   const handleAddToShortlist = (propertyId) => {
     setShortlist(prev => {
       if (prev.includes(propertyId)) return prev;
@@ -182,7 +154,6 @@ const PropertyGallery = () => {
     });
   };
 
-  // Remove from shortlist handler
   const handleRemoveFromShortlist = (propertyId) => {
     setShortlist(prev => {
       const updated = prev.filter(id => id !== propertyId);
@@ -191,9 +162,7 @@ const PropertyGallery = () => {
     });
   };
 
-  // Filter properties based on search and filter criteria
   const filteredProperties = properties.filter(property => {
-    // Keyword search (title, notes, address)
     const keyword = search.trim().toLowerCase();
     const matchesKeyword =
       !keyword ||
@@ -201,20 +170,16 @@ const PropertyGallery = () => {
       property.notes?.toLowerCase().includes(keyword) ||
       property.address?.toLowerCase().includes(keyword);
 
-    // Location filter
     const matchesLocation =
       !filterLocation ||
       property.address?.toLowerCase().includes(filterLocation.trim().toLowerCase());
 
-    // Type filter
     const matchesType = !filterType || property.type === filterType;
 
-    // Availability filter
     const matchesAvailability =
       !filterAvailability ||
       (property.availability || '').toLowerCase() === filterAvailability.toLowerCase();
 
-    // Price filter
     const price = Number(property.price) || 0;
     const min = filterPriceMin ? Number(filterPriceMin) : 0;
     const max = filterPriceMax ? Number(filterPriceMax) : Infinity;
@@ -232,7 +197,7 @@ const PropertyGallery = () => {
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '40px' }}>
-        <div>🔄 Loading properties...</div>
+        <div>Loading properties...</div>
       </div>
     );
   }
@@ -240,7 +205,7 @@ const PropertyGallery = () => {
   if (properties.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '40px' }}>
-        <div>📭 No properties found</div>
+        <div>No properties found</div>
         <button onClick={loadProperties} style={{ marginTop: '10px', padding: '8px 16px' }}>
           Refresh
         </button>
@@ -305,7 +270,7 @@ const PropertyGallery = () => {
                   e.currentTarget.style.boxShadow = "0 1px 3px rgba(33,150,243,0.3)";
                 }}
               >
-                🔄 Refresh
+                Refresh
               </button>
               <button 
                 onClick={toggleBulkMode}
@@ -336,7 +301,7 @@ const PropertyGallery = () => {
                   e.currentTarget.style.boxShadow = "0 1px 3px rgba(255,152,0,0.3)";
                 }}
               >
-                🗑️ Bulk Delete
+                Bulk Delete
               </button>
             </>
           ) : (
@@ -353,7 +318,7 @@ const PropertyGallery = () => {
                 gap: '4px',
                 minHeight: '22px'
               }}>
-                📊 {selectedProperties.length} selected
+                {selectedProperties.length} selected
               </span>
               <button 
                 onClick={handleBulkDelete}
@@ -390,7 +355,7 @@ const PropertyGallery = () => {
                   }
                 }}
               >
-                🗑️ Delete ({selectedProperties.length})
+                Delete ({selectedProperties.length})
               </button>
               <button 
                 onClick={toggleBulkMode}
@@ -418,7 +383,7 @@ const PropertyGallery = () => {
                   e.currentTarget.style.transform = "none";
                 }}
               >
-                ❌ Cancel
+                Cancel
               </button>
             </>
           )}
@@ -549,6 +514,7 @@ const PropertyGallery = () => {
         />
       </div>
 
+      {/* Properties Grid */}
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
@@ -568,14 +534,20 @@ const PropertyGallery = () => {
               cursor: "pointer"
             }}
             onClick={(e) => {
-              // Only open details if not bulkDeleteMode and not clicking the toggle
-              if (!bulkDeleteMode && !e.target.classList.contains('availability-toggle')) {
+              // Prevent card opening when clicking specific interactive elements
+              if (
+                !bulkDeleteMode && 
+                !e.target.closest('.availability-toggle') &&
+                !e.target.closest('.shortlist-btn') &&
+                !e.target.closest('.delete-btn') &&
+                !e.target.closest('.gallery-thumb')
+              ) {
                 setExpandedProperty(property);
               }
             }}
             onMouseOver={e => {
-              e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.18)";
-              e.currentTarget.style.transform = "translateY(-4px) scale(1.01)";
+              e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)";
+              e.currentTarget.style.transform = "translateY(-2px)";
             }}
             onMouseOut={e => {
               e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
@@ -596,11 +568,12 @@ const PropertyGallery = () => {
                   top: 12,
                   left: 12,
                   zIndex: 2,
-                  width: 20,
-                  height: 20,
+                  width: 18,
+                  height: 18,
                 }}
               />
             )}
+
             {/* Property Images */}
             {property.photos && property.photos.length > 0 ? (
               <div style={{ position: 'relative' }}>
@@ -641,19 +614,21 @@ const PropertyGallery = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#666'
+                color: '#666',
+                fontSize: '14px'
               }}>
-                📷 No images
+                No images available
               </div>
             )}
+
             {/* Property Details */}
             <div style={{ padding: '16px' }}>
-              <h3 style={{ margin: '0 0 8px 0', fontSize: '18px' }}>
+              <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 600 }}>
                 {property.title}
               </h3>
               
               <p style={{ margin: '4px 0', color: '#666', fontSize: '14px' }}>
-                📍 {property.address}
+                {property.address}
               </p>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', margin: '8px 0' }}>
@@ -662,164 +637,203 @@ const PropertyGallery = () => {
                   padding: '4px 8px', 
                   borderRadius: '4px', 
                   fontSize: '12px',
-                  color: '#1976d2'
+                  color: '#1976d2',
+                  fontWeight: 500
                 }}>
                   {property.type}
                 </span>
-                <span style={{ fontWeight: 'bold', color: '#2e7d32' }}>
+                <span style={{ fontWeight: 'bold', color: '#2e7d32', fontSize: '16px' }}>
                   {formatPrice(property.price)}
                 </span>
               </div>
 
               {property.landlordContact && (
-                <p style={{ margin: '4px 0', fontSize: '14px' }}>
-                  📱 {property.landlordContact}
+                <p style={{ margin: '4px 0', fontSize: '14px', color: '#555' }}>
+                  {property.landlordContact}
                 </p>
               )}
 
               {property.notes && (
-                <p style={{ margin: '8px 0', fontSize: '14px', color: '#666' }}>
-                  {property.notes.substring(0, 100)}...
+                <p style={{ margin: '8px 0', fontSize: '14px', color: '#666', lineHeight: '1.4' }}>
+                  {property.notes.substring(0, 100)}{property.notes.length > 100 ? '...' : ''}
                 </p>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+              {/* Bottom Actions Row */}
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                marginTop: '12px',
+                gap: '8px'
+              }}>
                 <span style={{ fontSize: '12px', color: '#999' }}>
-                  Added: {formatDate(property.createdAt)}
+                  {formatDate(property.createdAt)}
                 </span>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <div
-                    className="availability-toggle"
-                    onClick={e => {
-                      e.stopPropagation();
-                      handleToggleAvailability(property);
-                    }}
-                    style={{
-                      width: 160,
-                      height: 40,
-                      borderRadius: 24,
-                      background: property.availability === "Available"
-                        ? "linear-gradient(90deg, #43e97b 0%, #38f9d7 100%)"
-                        : "linear-gradient(90deg, #ff9800 0%, #ff512f 100%)",
-                      display: "flex",
-                      alignItems: "center",
-                      cursor: "pointer",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                      position: "relative",
-                      transition: "background 0.3s"
-                    }}
-                    title="Toggle availability"
-                  >
-                    <span style={{
-                      width: "100%",
-                      textAlign: "center",
-                      color: property.availability === "Available" ? "#155724" : "#fff",
-                      fontWeight: 600,
-                      fontSize: 15,
-                      letterSpacing: "0.5px",
-                      transition: "color 0.2s"
-                    }}>
-                      {property.availability === "Available" ? "Available" : "Taken"}
-                    </span>
-                    <div style={{
-                      position: "absolute",
-                      top: 4,
-                      left: property.availability === "Available" ? 4 : 124,
-                      width: 32,
-                      height: 32,
-                      borderRadius: "50%",
-                      background: "#fff",
-                      boxShadow: "0 1px 4px rgba(0,0,0,0.10)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      transition: "left 0.3s"
-                    }}>
-                      {property.availability === "Available" ? "🔑" : "🔒"}
-                    </div>
+                
+                {/* Availability Toggle */}
+                <div
+                  className="availability-toggle"
+                  onClick={e => {
+                    e.stopPropagation();
+                    handleToggleAvailability(property);
+                  }}
+                  style={{
+                    width: 100,
+                    height: 32,
+                    borderRadius: 16,
+                    background: property.availability === "Available"
+                      ? "linear-gradient(90deg, #4caf50 0%, #66bb6a 100%)"
+                      : "linear-gradient(90deg, #ff9800 0%, #ffb74d 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    cursor: "pointer",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                    position: "relative",
+                    transition: "all 0.2s ease"
+                  }}
+                  title="Toggle availability"
+                >
+                  <span style={{
+                    width: "100%",
+                    textAlign: "center",
+                    color: "white",
+                    fontWeight: 600,
+                    fontSize: 12,
+                    letterSpacing: "0.3px"
+                  }}>
+                    {property.availability === "Available" ? "Available" : "Taken"}
+                  </span>
+                  <div style={{
+                    position: "absolute",
+                    top: 2,
+                    left: property.availability === "Available" ? 2 : 70,
+                    width: 28,
+                    height: 28,
+                    borderRadius: "50%",
+                    background: "#fff",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "left 0.2s ease",
+                    fontSize: 12
+                  }}>
+                    {property.availability === "Available" ? "✓" : "✗"}
                   </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteClick(property);
-                    }}
-                    style={{
-                      padding: '4px 8px',
-                      fontFamily: 'Inter, Nunito, Arial, sans-serif',
-                      fontSize: '10px',
-                      backgroundColor: '#f44336',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                    title="Delete property"
-                  >
-                    🗑️ Delete
-                  </button>
                 </div>
               </div>
 
               {/* Image Gallery Preview */}
               {property.photos && property.photos.length > 1 && (
                 <div style={{ marginTop: '12px' }}>
-                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px', fontWeight: 500 }}>
                     Gallery ({property.photos.length} images):
                   </div>
-                  <div style={{ display: 'flex', gap: '4px', overflowX: 'auto' }}>
+                  <div style={{ display: 'flex', gap: '6px', overflowX: 'auto' }}>
                     {property.photos.slice(0, 4).map((photoUrl, index) => (
                       <img
                         key={index}
-                        src={photoUrl} // Use direct URL
+                        src={photoUrl}
                         alt={`${property.title} - Image ${index + 1}`}
+                        className="gallery-thumb"
                         style={{
-                          width: '60px',
-                          height: '60px',
+                          width: '50px',
+                          height: '50px',
                           objectFit: 'cover',
                           borderRadius: '4px',
                           cursor: 'pointer',
-                          border: '1px solid #ddd'
+                          border: '2px solid #ddd',
+                          flexShrink: 0,
+                          transition: 'border-color 0.2s'
                         }}
-                        onError={(e) => {
-                          console.log('Thumbnail failed to load:', photoUrl);
-                          e.target.style.display = 'none';
+                        onMouseOver={e => e.target.style.borderColor = '#00bfae'}
+                        onMouseOut={e => e.target.style.borderColor = '#ddd'}
+                        onClick={e => {
+                          e.stopPropagation();
+                          setImageGallery({ images: property.photos, index });
                         }}
-                        onClick={() => setSelectedImage({
-                          url: photoUrl,
-                          title: `${property.title} - Image ${index + 1}`
-                        })}
                       />
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Shortlist button */}
-              <button
-                onClick={() => handleAddToShortlist(property.id)}
-                style={{
-                  padding: '4px 8px',
-                  fontFamily: 'Inter, Nunito, Arial, sans-serif',
-                  fontSize: '10px',
-                  backgroundColor: shortlist.includes(property.id) ? '#b2dfdb' : '#00bfae',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  marginLeft: 4
-                }}
-              >
-                {shortlist.includes(property.id) ? 'Shortlisted' : 'Add to Shortlist'}
-              </button>
+              {/* Action Buttons */}
+              <div style={{ 
+                display: 'flex', 
+                gap: '8px', 
+                marginTop: '12px',
+                justifyContent: 'flex-end'
+              }}>
+                <button
+                  className="shortlist-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    shortlist.includes(property.id) 
+                      ? handleRemoveFromShortlist(property.id)
+                      : handleAddToShortlist(property.id);
+                  }}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '11px',
+                    backgroundColor: shortlist.includes(property.id) ? '#4caf50' : '#00bfae',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontWeight: 500,
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseOver={e => {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                  }}
+                  onMouseOut={e => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  {shortlist.includes(property.id) ? 'Shortlisted' : 'Add to Shortlist'}
+                </button>
+                
+                <button
+                  className="delete-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteClick(property);
+                  }}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '11px',
+                    backgroundColor: '#f44336',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontWeight: 500,
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseOver={e => {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.backgroundColor = '#d32f2f';
+                    e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                  }}
+                  onMouseOut={e => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.backgroundColor = '#f44336';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Image Gallery Modal */}
+      {/* Improved Image Gallery Modal */}
       {imageGallery.images.length > 0 && (
         <div
           style={{
@@ -828,7 +842,7 @@ const PropertyGallery = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.92)',
+            backgroundColor: 'rgba(0,0,0,0.9)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -839,17 +853,15 @@ const PropertyGallery = () => {
           <div
             style={{
               position: 'relative',
-              maxWidth: '90vw', // Almost full width
-              maxHeight: '90vh', // Almost full height
+              maxWidth: '90vw',
+              maxHeight: '90vh',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              background: 'rgba(0,0,0,0.05)',
-              borderRadius: '24px',
-              boxShadow: '0 8px 48px rgba(0,0,0,0.35)'
+              justifyContent: 'center'
             }}
             onClick={e => e.stopPropagation()}
           >
+            {/* Previous Button - Responsive Size */}
             <button
               onClick={() =>
                 setImageGallery(g => ({
@@ -859,34 +871,50 @@ const PropertyGallery = () => {
               }
               style={{
                 position: 'absolute',
-                left: 16,
+                left: window.innerWidth > 768 ? 20 : 8,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                background: 'rgba(0,0,0,0.5)',
+                background: 'rgba(0,0,0,0.7)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '50%',
-                width: 56,
-                height: 56,
-                fontSize: 36,
+                width: window.innerWidth > 768 ? 48 : 36,
+                height: window.innerWidth > 768 ? 48 : 36,
+                fontSize: window.innerWidth > 768 ? 24 : 18,
                 cursor: 'pointer',
-                zIndex: 1
+                zIndex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.7)';
+                e.currentTarget.style.transform = 'translateY(-50%)';
               }}
               title="Previous"
             >
               ‹
             </button>
+
+            {/* Main Image */}
             <img
               src={imageGallery.images[imageGallery.index]}
               alt={`Property image ${imageGallery.index + 1}`}
               style={{
-                maxWidth: '85vw', // Large image, but not full page
-                maxHeight: '85vh',
-                borderRadius: '18px',
-                boxShadow: '0 8px 48px rgba(0,0,0,0.45)',
+                maxWidth: window.innerWidth > 768 ? '80vw' : '85vw',
+                maxHeight: window.innerWidth > 768 ? '80vh' : '75vh',
+                borderRadius: '8px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
                 background: '#fff'
               }}
             />
+
+            {/* Next Button - Responsive Size */}
             <button
               onClick={() =>
                 setImageGallery(g => ({
@@ -896,42 +924,84 @@ const PropertyGallery = () => {
               }
               style={{
                 position: 'absolute',
-                right: 16,
+                right: window.innerWidth > 768 ? 20 : 8,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                background: 'rgba(0,0,0,0.5)',
+                background: 'rgba(0,0,0,0.7)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '50%',
-                width: 56,
-                height: 56,
-                fontSize: 36,
+                width: window.innerWidth > 768 ? 48 : 36,
+                height: window.innerWidth > 768 ? 48 : 36,
+                fontSize: window.innerWidth > 768 ? 24 : 18,
                 cursor: 'pointer',
-                zIndex: 1
+                zIndex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.7)';
+                e.currentTarget.style.transform = 'translateY(-50%)';
               }}
               title="Next"
             >
               ›
             </button>
+
+            {/* Close Button - Responsive Size */}
             <button
               onClick={() => setImageGallery({ images: [], index: 0 })}
               style={{
                 position: 'absolute',
-                top: 24,
-                right: 24,
+                top: window.innerWidth > 768 ? 20 : 10,
+                right: window.innerWidth > 768 ? 20 : 10,
                 backgroundColor: 'rgba(0,0,0,0.7)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '50%',
-                width: '56px',
-                height: '56px',
-                fontSize: '32px',
-                cursor: 'pointer'
+                width: window.innerWidth > 768 ? 40 : 32,
+                height: window.innerWidth > 768 ? 40 : 32,
+                fontSize: window.innerWidth > 768 ? 20 : 16,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(244,67,54,0.8)';
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.7)';
+                e.currentTarget.style.transform = 'none';
               }}
               title="Close"
             >
               ×
             </button>
+
+            {/* Image Counter */}
+            <div style={{
+              position: 'absolute',
+              bottom: window.innerWidth > 768 ? 20 : 10,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: 'rgba(0,0,0,0.7)',
+              color: 'white',
+              padding: '6px 12px',
+              borderRadius: '16px',
+              fontSize: '14px',
+              fontWeight: 500
+            }}>
+              {imageGallery.index + 1} of {imageGallery.images.length}
+            </div>
           </div>
         </div>
       )}
@@ -949,7 +1019,8 @@ const PropertyGallery = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 3000
+            zIndex: 3000,
+            padding: '20px'
           }}
           onClick={() => setExpandedProperty(null)}
         >
@@ -957,35 +1028,16 @@ const PropertyGallery = () => {
             style={{
               background: '#fff',
               borderRadius: 12,
-              maxWidth: 480,
-              width: '90%',
-              padding: 32,
-              boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+              maxWidth: 500,
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              padding: 24,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
               position: 'relative'
             }}
             onClick={e => e.stopPropagation()}
           >
-            <h2 style={{ marginBottom: 12 }}>{expandedProperty.title}</h2>
-            {expandedProperty.photos && expandedProperty.photos.length > 0 && (
-              <img
-                src={expandedProperty.photos[0]}
-                alt={expandedProperty.title}
-                style={{
-                  width: '100%',
-                  height: '220px',
-                  objectFit: 'cover',
-                  borderRadius: 8,
-                  marginBottom: 16
-                }}
-              />
-            )}
-            <p><strong>Address:</strong> {expandedProperty.address}</p>
-            <p><strong>Type:</strong> {expandedProperty.type}</p>
-            <p><strong>Price:</strong> {formatPrice(expandedProperty.price)}</p>
-            <p><strong>Landlord Contact:</strong> {expandedProperty.landlordContact}</p>
-            <p><strong>Availability:</strong> {expandedProperty.availability}</p>
-            <p><strong>Notes:</strong> {expandedProperty.notes || "No notes"}</p>
-            <p><strong>Added:</strong> {formatDate(expandedProperty.createdAt)}</p>
             <button
               onClick={() => setExpandedProperty(null)}
               style={{
@@ -996,15 +1048,44 @@ const PropertyGallery = () => {
                 color: '#fff',
                 border: 'none',
                 borderRadius: '50%',
-                width: 32,
-                height: 32,
-                fontSize: 18,
-                cursor: 'pointer'
+                width: 30,
+                height: 30,
+                fontSize: 16,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
               title="Close"
             >
               ×
             </button>
+
+            <h2 style={{ marginBottom: 16, paddingRight: 40 }}>{expandedProperty.title}</h2>
+            
+            {expandedProperty.photos && expandedProperty.photos.length > 0 && (
+              <img
+                src={expandedProperty.photos[0]}
+                alt={expandedProperty.title}
+                style={{
+                  width: '100%',
+                  height: '200px',
+                  objectFit: 'cover',
+                  borderRadius: 8,
+                  marginBottom: 16
+                }}
+              />
+            )}
+
+            <div style={{ lineHeight: '1.6' }}>
+              <p><strong>Address:</strong> {expandedProperty.address}</p>
+              <p><strong>Type:</strong> {expandedProperty.type}</p>
+              <p><strong>Price:</strong> {formatPrice(expandedProperty.price)}</p>
+              <p><strong>Landlord Contact:</strong> {expandedProperty.landlordContact}</p>
+              <p><strong>Availability:</strong> {expandedProperty.availability}</p>
+              <p><strong>Notes:</strong> {expandedProperty.notes || "No notes available"}</p>
+              <p><strong>Added:</strong> {formatDate(expandedProperty.createdAt)}</p>
+            </div>
           </div>
         </div>
       )}
@@ -1022,7 +1103,8 @@ const PropertyGallery = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 2000
+            zIndex: 2000,
+            padding: '20px'
           }}
           onClick={cancelDelete}
         >
@@ -1032,8 +1114,8 @@ const PropertyGallery = () => {
               padding: '24px',
               borderRadius: '8px',
               maxWidth: '400px',
-              width: '90%',
-              boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+              width: '100%',
+              boxShadow: '0 8px 16px rgba(0,0,0,0.2)'
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -1084,7 +1166,7 @@ const PropertyGallery = () => {
         </div>
       )}
 
-      {/* Image Modal */}
+      {/* Single Image Modal */}
       {selectedImage && (
         <div 
           style={{
@@ -1117,10 +1199,13 @@ const PropertyGallery = () => {
                 color: 'white',
                 border: 'none',
                 borderRadius: '50%',
-                width: '40px',
-                height: '40px',
-                fontSize: '20px',
-                cursor: 'pointer'
+                width: '32px',
+                height: '32px',
+                fontSize: '16px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
             >
               ×
