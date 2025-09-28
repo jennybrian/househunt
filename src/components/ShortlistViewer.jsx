@@ -374,7 +374,7 @@ const ShortlistViewer = ({ shareToken }) => {
             }}
             onClick={e => e.stopPropagation()}
           >
-            {/* Previous Button */}
+            {/* Previous Button - Mobile Optimized */}
             <button
               onClick={() =>
                 setMediaGallery(g => ({
@@ -384,16 +384,16 @@ const ShortlistViewer = ({ shareToken }) => {
               }
               style={{
                 position: 'absolute',
-                left: window.innerWidth > 768 ? 20 : 8,
+                left: window.innerWidth > 768 ? 20 : 5,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                background: 'rgba(0,0,0,0.7)',
+                background: 'rgba(0,0,0,0.6)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '50%',
-                width: window.innerWidth > 768 ? 48 : 36,
-                height: window.innerWidth > 768 ? 48 : 36,
-                fontSize: window.innerWidth > 768 ? 24 : 18,
+                width: window.innerWidth > 768 ? 40 : 28,
+                height: window.innerWidth > 768 ? 40 : 28,
+                fontSize: window.innerWidth > 768 ? 20 : 14,
                 cursor: 'pointer',
                 zIndex: 1,
                 display: 'flex',
@@ -406,7 +406,7 @@ const ShortlistViewer = ({ shareToken }) => {
                 e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
               }}
               onMouseOut={e => {
-                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.7)';
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.6)';
                 e.currentTarget.style.transform = 'translateY(-50%)';
               }}
               title="Previous"
@@ -414,7 +414,7 @@ const ShortlistViewer = ({ shareToken }) => {
               ‹
             </button>
 
-            {/* Main Media Display */}
+            {/* Main Media Display - Fixed Sizing */}
             {(() => {
               const currentMediaUrl = mediaGallery.media[mediaGallery.index];
               const isVideo = currentMediaUrl && (
@@ -430,8 +430,10 @@ const ShortlistViewer = ({ shareToken }) => {
                   controls
                   autoPlay
                   style={{
-                    maxWidth: window.innerWidth > 768 ? '80vw' : '85vw',
-                    maxHeight: window.innerWidth > 768 ? '80vh' : '75vh',
+                    maxWidth: window.innerWidth > 768 ? '75vw' : '90vw',
+                    maxHeight: window.innerWidth > 768 ? '70vh' : '60vh',
+                    width: 'auto',
+                    height: 'auto',
                     borderRadius: '8px',
                     boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
                     background: '#000'
@@ -442,8 +444,10 @@ const ShortlistViewer = ({ shareToken }) => {
                   src={currentMediaUrl}
                   alt={`Property media ${mediaGallery.index + 1}`}
                   style={{
-                    maxWidth: window.innerWidth > 768 ? '80vw' : '85vw',
-                    maxHeight: window.innerWidth > 768 ? '80vh' : '75vh',
+                    maxWidth: window.innerWidth > 768 ? '75vw' : '90vw',
+                    maxHeight: window.innerWidth > 768 ? '70vh' : '60vh',
+                    width: 'auto',
+                    height: 'auto',
                     borderRadius: '8px',
                     boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
                     background: '#fff'
@@ -452,7 +456,7 @@ const ShortlistViewer = ({ shareToken }) => {
               );
             })()}
 
-            {/* Next Button */}
+            {/* Next Button - Mobile Optimized */}
             <button
               onClick={() =>
                 setMediaGallery(g => ({
@@ -462,16 +466,16 @@ const ShortlistViewer = ({ shareToken }) => {
               }
               style={{
                 position: 'absolute',
-                right: window.innerWidth > 768 ? 20 : 8,
+                right: window.innerWidth > 768 ? 20 : 5,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                background: 'rgba(0,0,0,0.7)',
+                background: 'rgba(0,0,0,0.6)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '50%',
-                width: window.innerWidth > 768 ? 48 : 36,
-                height: window.innerWidth > 768 ? 48 : 36,
-                fontSize: window.innerWidth > 768 ? 24 : 18,
+                width: window.innerWidth > 768 ? 40 : 28,
+                height: window.innerWidth > 768 ? 40 : 28,
+                fontSize: window.innerWidth > 768 ? 20 : 14,
                 cursor: 'pointer',
                 zIndex: 1,
                 display: 'flex',
@@ -484,7 +488,7 @@ const ShortlistViewer = ({ shareToken }) => {
                 e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
               }}
               onMouseOut={e => {
-                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.7)';
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.6)';
                 e.currentTarget.style.transform = 'translateY(-50%)';
               }}
               title="Next"
@@ -492,32 +496,33 @@ const ShortlistViewer = ({ shareToken }) => {
               ›
             </button>
 
-            {/* Close Button */}
+            {/* Close Button - Mobile Optimized */}
             <button
               onClick={() => setMediaGallery({ media: [], index: 0 })}
               style={{
                 position: 'absolute',
-                top: window.innerWidth > 768 ? 20 : 10,
-                right: window.innerWidth > 768 ? 20 : 10,
-                backgroundColor: 'rgba(0,0,0,0.7)',
+                top: window.innerWidth > 768 ? 15 : 8,
+                right: window.innerWidth > 768 ? 15 : 8,
+                backgroundColor: 'rgba(244,67,54,0.8)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '50%',
-                width: window.innerWidth > 768 ? 40 : 32,
-                height: window.innerWidth > 768 ? 40 : 32,
-                fontSize: window.innerWidth > 768 ? 20 : 16,
+                width: window.innerWidth > 768 ? 35 : 26,
+                height: window.innerWidth > 768 ? 35 : 26,
+                fontSize: window.innerWidth > 768 ? 18 : 14,
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                fontWeight: 'bold'
               }}
               onMouseOver={e => {
-                e.currentTarget.style.backgroundColor = 'rgba(244,67,54,0.8)';
+                e.currentTarget.style.backgroundColor = 'rgba(244,67,54,1)';
                 e.currentTarget.style.transform = 'scale(1.1)';
               }}
               onMouseOut={e => {
-                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.7)';
+                e.currentTarget.style.backgroundColor = 'rgba(244,67,54,0.8)';
                 e.currentTarget.style.transform = 'none';
               }}
               title="Close"
@@ -525,18 +530,18 @@ const ShortlistViewer = ({ shareToken }) => {
               ×
             </button>
 
-            {/* Media Counter */}
+            {/* Media Counter - Mobile Optimized */}
             <div
               style={{
                 position: 'absolute',
-                bottom: window.innerWidth > 768 ? 20 : 10,
+                bottom: window.innerWidth > 768 ? 15 : 8,
                 left: '50%',
                 transform: 'translateX(-50%)',
                 backgroundColor: 'rgba(0,0,0,0.7)',
                 color: 'white',
-                padding: '6px 12px',
-                borderRadius: '16px',
-                fontSize: '14px',
+                padding: window.innerWidth > 768 ? '6px 12px' : '4px 8px',
+                borderRadius: '12px',
+                fontSize: window.innerWidth > 768 ? '14px' : '12px',
                 fontWeight: 500
               }}
             >
