@@ -162,6 +162,35 @@ const PropertyGallery = () => {
     });
   };
 
+  // Helper function to get all media (photos + videos) for a property
+  const getPropertyMedia = (property) => {
+    const media = [];
+    
+    // Add photos with type indicator
+    if (property.photos && property.photos.length > 0) {
+      property.photos.forEach((url, index) => {
+        media.push({
+          url,
+          type: 'image',
+          index: media.length
+        });
+      });
+    }
+    
+    // Add videos with type indicator
+    if (property.videos && property.videos.length > 0) {
+      property.videos.forEach((url, index) => {
+        media.push({
+          url,
+          type: 'video',
+          index: media.length
+        });
+      });
+    }
+    
+    return media;
+  };
+
   const filteredProperties = properties.filter(property => {
     const keyword = search.trim().toLowerCase();
     const matchesKeyword =
@@ -520,320 +549,412 @@ const PropertyGallery = () => {
         gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
         gap: '20px' 
       }}>
-        {filteredProperties.map((property) => (
-          <div
-            key={property.id}
-            style={{
-              border: '1px solid #ddd',
-              borderRadius: '8px',
-              overflow: 'hidden',
-              backgroundColor: 'white',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              position: 'relative',
-              transition: "box-shadow 0.2s, transform 0.2s",
-              cursor: "pointer"
-            }}
-            onClick={(e) => {
-              // Prevent card opening when clicking specific interactive elements
-              if (
-                !bulkDeleteMode && 
-                !e.target.closest('.availability-toggle') &&
-                !e.target.closest('.shortlist-btn') &&
-                !e.target.closest('.delete-btn') &&
-                !e.target.closest('.gallery-thumb')
-              ) {
-                setExpandedProperty(property);
-              }
-            }}
-            onMouseOver={e => {
-              e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)";
-              e.currentTarget.style.transform = "translateY(-2px)";
-            }}
-            onMouseOut={e => {
-              e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
-              e.currentTarget.style.transform = "none";
-            }}
-          >
-            {/* Bulk Delete Checkbox */}
-            {bulkDeleteMode && (
-              <input
-                type="checkbox"
-                checked={selectedProperties.includes(property.id)}
-                onChange={e => {
-                  e.stopPropagation();
-                  togglePropertySelection(property.id);
-                }}
-                style={{
-                  position: 'absolute',
-                  top: 12,
-                  left: 12,
-                  zIndex: 2,
-                  width: 18,
-                  height: 18,
-                }}
-              />
-            )}
-
-            {/* Property Images */}
-            {property.photos && property.photos.length > 0 ? (
-              <div style={{ position: 'relative' }}>
-                <img
-                  src={property.photos[0]}
-                  alt={property.title}
-                  style={{
-                    width: '100%',
-                    height: '200px',
-                    objectFit: 'cover',
-                    cursor: 'pointer'
-                  }}
-                  onClick={e => {
+        {filteredProperties.map((property) => {
+          const allMedia = getPropertyMedia(property);
+          const firstMediaItem = allMedia[0];
+          
+          return (
+            <div
+              key={property.id}
+              style={{
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                backgroundColor: 'white',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                position: 'relative',
+                transition: "box-shadow 0.2s, transform 0.2s",
+                cursor: "pointer"
+              }}
+              onClick={(e) => {
+                // Prevent card opening when clicking specific interactive elements
+                if (
+                  !bulkDeleteMode && 
+                  !e.target.closest('.availability-toggle') &&
+                  !e.target.closest('.shortlist-btn') &&
+                  !e.target.closest('.delete-btn') &&
+                  !e.target.closest('.gallery-thumb')
+                ) {
+                  setExpandedProperty(property);
+                }
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)";
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+                e.currentTarget.style.transform = "none";
+              }}
+            >
+              {/* Bulk Delete Checkbox */}
+              {bulkDeleteMode && (
+                <input
+                  type="checkbox"
+                  checked={selectedProperties.includes(property.id)}
+                  onChange={e => {
                     e.stopPropagation();
-                    setImageGallery({ images: property.photos, index: 0 });
+                    togglePropertySelection(property.id);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    top: 12,
+                    left: 12,
+                    zIndex: 2,
+                    width: 18,
+                    height: 18,
                   }}
                 />
-                {property.photos.length > 1 && (
-                  <div style={{
-                    position: 'absolute',
-                    bottom: '8px',
-                    right: '8px',
-                    backgroundColor: 'rgba(0,0,0,0.7)',
-                    color: 'white',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    fontSize: '12px'
+              )}
+
+              {/* Property Media (Image or Video) */}
+              {firstMediaItem ? (
+                <div style={{ position: 'relative' }}>
+                  {firstMediaItem.type === 'image' ? (
+                    <img
+                      src={firstMediaItem.url}
+                      alt={property.title}
+                      style={{
+                        width: '100%',
+                        height: '200px',
+                        objectFit: 'cover',
+                        cursor: 'pointer'
+                      }}
+                      onClick={e => {
+                        e.stopPropagation();
+                        setImageGallery({ images: allMedia.map(m => m.url), index: 0 });
+                      }}
+                    />
+                  ) : (
+                    <video
+                      src={firstMediaItem.url}
+                      style={{
+                        width: '100%',
+                        height: '200px',
+                        objectFit: 'cover',
+                        cursor: 'pointer'
+                      }}
+                      onClick={e => {
+                        e.stopPropagation();
+                        setImageGallery({ images: allMedia.map(m => m.url), index: 0 });
+                      }}
+                      onMouseEnter={e => e.target.play()}
+                      onMouseLeave={e => {
+                        e.target.pause();
+                        e.target.currentTime = 0;
+                      }}
+                      muted
+                      loop
+                    />
+                  )}
+                  
+                  {/* Media count indicator */}
+                  {allMedia.length > 1 && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '8px',
+                      right: '8px',
+                      backgroundColor: 'rgba(0,0,0,0.7)',
+                      color: 'white',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      {property.photos && property.photos.length > 0 && (
+                        <span>📷{property.photos.length}</span>
+                      )}
+                      {property.videos && property.videos.length > 0 && (
+                        <span>🎥{property.videos.length}</span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Video play indicator */}
+                  {firstMediaItem.type === 'video' && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '8px',
+                      left: '8px',
+                      backgroundColor: 'rgba(0,0,0,0.7)',
+                      color: 'white',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      🎥 Video
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div style={{
+                  width: '100%',
+                  height: '200px',
+                  backgroundColor: '#f0f0f0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#666',
+                  fontSize: '14px'
+                }}>
+                  No media available
+                </div>
+              )}
+
+              {/* Property Details */}
+              <div style={{ padding: '16px' }}>
+                <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 600 }}>
+                  {property.title}
+                </h3>
+                
+                <p style={{ margin: '4px 0', color: '#666', fontSize: '14px' }}>
+                  {property.address}
+                </p>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', margin: '8px 0' }}>
+                  <span style={{ 
+                    backgroundColor: '#e3f2fd', 
+                    padding: '4px 8px', 
+                    borderRadius: '4px', 
+                    fontSize: '12px',
+                    color: '#1976d2',
+                    fontWeight: 500
                   }}>
-                    +{property.photos.length - 1} more
+                    {property.type}
+                  </span>
+                  <span style={{ fontWeight: 'bold', color: '#2e7d32', fontSize: '16px' }}>
+                    {formatPrice(property.price)}
+                  </span>
+                </div>
+
+                {property.landlordContact && (
+                  <p style={{ margin: '4px 0', fontSize: '14px', color: '#555' }}>
+                    {property.landlordContact}
+                  </p>
+                )}
+
+                {property.notes && (
+                  <p style={{ margin: '8px 0', fontSize: '14px', color: '#666', lineHeight: '1.4' }}>
+                    {property.notes.substring(0, 100)}{property.notes.length > 100 ? '...' : ''}
+                  </p>
+                )}
+
+                {/* Bottom Actions Row */}
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  marginTop: '12px',
+                  gap: '8px'
+                }}>
+                  <span style={{ fontSize: '12px', color: '#999' }}>
+                    {formatDate(property.createdAt)}
+                  </span>
+                  
+                  {/* Availability Toggle */}
+                  <div
+                    className="availability-toggle"
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleToggleAvailability(property);
+                    }}
+                    style={{
+                      width: 100,
+                      height: 32,
+                      borderRadius: 16,
+                      background: property.availability === "Available"
+                        ? "linear-gradient(90deg, #4caf50 0%, #66bb6a 100%)"
+                        : "linear-gradient(90deg, #ff9800 0%, #ffb74d 100%)",
+                      display: "flex",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      position: "relative",
+                      transition: "all 0.2s ease"
+                    }}
+                    title="Toggle availability"
+                  >
+                    <span style={{
+                      width: "100%",
+                      textAlign: "center",
+                      color: "white",
+                      fontWeight: 600,
+                      fontSize: 12,
+                      letterSpacing: "0.3px"
+                    }}>
+                      {property.availability === "Available" ? "Available" : "Taken"}
+                    </span>
+                    <div style={{
+                      position: "absolute",
+                      top: 2,
+                      left: property.availability === "Available" ? 2 : 70,
+                      width: 28,
+                      height: 28,
+                      borderRadius: "50%",
+                      background: "#fff",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "left 0.2s ease",
+                      fontSize: 12
+                    }}>
+                      {property.availability === "Available" ? "✓" : "✗"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Media Gallery Preview */}
+                {allMedia.length > 1 && (
+                  <div style={{ marginTop: '12px' }}>
+                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px', fontWeight: 500 }}>
+                      Media ({allMedia.length} items):
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px', overflowX: 'auto' }}>
+                      {allMedia.slice(0, 4).map((mediaItem, index) => (
+                        <div
+                          key={index}
+                          className="gallery-thumb"
+                          style={{
+                            position: 'relative',
+                            width: '50px',
+                            height: '50px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            border: '2px solid #ddd',
+                            flexShrink: 0,
+                            transition: 'border-color 0.2s',
+                            overflow: 'hidden'
+                          }}
+                          onMouseOver={e => e.currentTarget.style.borderColor = '#00bfae'}
+                          onMouseOut={e => e.currentTarget.style.borderColor = '#ddd'}
+                          onClick={e => {
+                            e.stopPropagation();
+                            setImageGallery({ images: allMedia.map(m => m.url), index });
+                          }}
+                        >
+                          {mediaItem.type === 'image' ? (
+                            <img
+                              src={mediaItem.url}
+                              alt={`${property.title} - Media ${index + 1}`}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover'
+                              }}
+                            />
+                          ) : (
+                            <video
+                              src={mediaItem.url}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover'
+                              }}
+                              muted
+                            />
+                          )}
+                          {mediaItem.type === 'video' && (
+                            <div style={{
+                              position: 'absolute',
+                              top: '2px',
+                              right: '2px',
+                              backgroundColor: 'rgba(0,0,0,0.7)',
+                              color: 'white',
+                              borderRadius: '2px',
+                              padding: '1px 3px',
+                              fontSize: '8px'
+                            }}>
+                              🎥
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
-              </div>
-            ) : (
-              <div style={{
-                width: '100%',
-                height: '200px',
-                backgroundColor: '#f0f0f0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#666',
-                fontSize: '14px'
-              }}>
-                No images available
-              </div>
-            )}
 
-            {/* Property Details */}
-            <div style={{ padding: '16px' }}>
-              <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 600 }}>
-                {property.title}
-              </h3>
-              
-              <p style={{ margin: '4px 0', color: '#666', fontSize: '14px' }}>
-                {property.address}
-              </p>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', margin: '8px 0' }}>
-                <span style={{ 
-                  backgroundColor: '#e3f2fd', 
-                  padding: '4px 8px', 
-                  borderRadius: '4px', 
-                  fontSize: '12px',
-                  color: '#1976d2',
-                  fontWeight: 500
+                {/* Action Buttons */}
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '8px', 
+                  marginTop: '12px',
+                  justifyContent: 'flex-end'
                 }}>
-                  {property.type}
-                </span>
-                <span style={{ fontWeight: 'bold', color: '#2e7d32', fontSize: '16px' }}>
-                  {formatPrice(property.price)}
-                </span>
-              </div>
-
-              {property.landlordContact && (
-                <p style={{ margin: '4px 0', fontSize: '14px', color: '#555' }}>
-                  {property.landlordContact}
-                </p>
-              )}
-
-              {property.notes && (
-                <p style={{ margin: '8px 0', fontSize: '14px', color: '#666', lineHeight: '1.4' }}>
-                  {property.notes.substring(0, 100)}{property.notes.length > 100 ? '...' : ''}
-                </p>
-              )}
-
-              {/* Bottom Actions Row */}
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center', 
-                marginTop: '12px',
-                gap: '8px'
-              }}>
-                <span style={{ fontSize: '12px', color: '#999' }}>
-                  {formatDate(property.createdAt)}
-                </span>
-                
-                {/* Availability Toggle */}
-                <div
-                  className="availability-toggle"
-                  onClick={e => {
-                    e.stopPropagation();
-                    handleToggleAvailability(property);
-                  }}
-                  style={{
-                    width: 100,
-                    height: 32,
-                    borderRadius: 16,
-                    background: property.availability === "Available"
-                      ? "linear-gradient(90deg, #4caf50 0%, #66bb6a 100%)"
-                      : "linear-gradient(90deg, #ff9800 0%, #ffb74d 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    cursor: "pointer",
-                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                    position: "relative",
-                    transition: "all 0.2s ease"
-                  }}
-                  title="Toggle availability"
-                >
-                  <span style={{
-                    width: "100%",
-                    textAlign: "center",
-                    color: "white",
-                    fontWeight: 600,
-                    fontSize: 12,
-                    letterSpacing: "0.3px"
-                  }}>
-                    {property.availability === "Available" ? "Available" : "Taken"}
-                  </span>
-                  <div style={{
-                    position: "absolute",
-                    top: 2,
-                    left: property.availability === "Available" ? 2 : 70,
-                    width: 28,
-                    height: 28,
-                    borderRadius: "50%",
-                    background: "#fff",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    transition: "left 0.2s ease",
-                    fontSize: 12
-                  }}>
-                    {property.availability === "Available" ? "✓" : "✗"}
-                  </div>
+                  <button
+                    className="shortlist-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      shortlist.includes(property.id) 
+                        ? handleRemoveFromShortlist(property.id)
+                        : handleAddToShortlist(property.id);
+                    }}
+                    style={{
+                      padding: '6px 12px',
+                      fontSize: '11px',
+                      backgroundColor: shortlist.includes(property.id) ? '#4caf50' : '#00bfae',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontWeight: 500,
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseOver={e => {
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                    }}
+                    onMouseOut={e => {
+                      e.currentTarget.style.transform = 'none';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    {shortlist.includes(property.id) ? 'Shortlisted' : 'Add to Shortlist'}
+                  </button>
+                  
+                  <button
+                    className="delete-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteClick(property);
+                    }}
+                    style={{
+                      padding: '6px 12px',
+                      fontSize: '11px',
+                      backgroundColor: '#f44336',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontWeight: 500,
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseOver={e => {
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.backgroundColor = '#d32f2f';
+                      e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                    }}
+                    onMouseOut={e => {
+                      e.currentTarget.style.transform = 'none';
+                      e.currentTarget.style.backgroundColor = '#f44336';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    Delete
+                  </button>
                 </div>
-              </div>
-
-              {/* Image Gallery Preview */}
-              {property.photos && property.photos.length > 1 && (
-                <div style={{ marginTop: '12px' }}>
-                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px', fontWeight: 500 }}>
-                    Gallery ({property.photos.length} images):
-                  </div>
-                  <div style={{ display: 'flex', gap: '6px', overflowX: 'auto' }}>
-                    {property.photos.slice(0, 4).map((photoUrl, index) => (
-                      <img
-                        key={index}
-                        src={photoUrl}
-                        alt={`${property.title} - Image ${index + 1}`}
-                        className="gallery-thumb"
-                        style={{
-                          width: '50px',
-                          height: '50px',
-                          objectFit: 'cover',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          border: '2px solid #ddd',
-                          flexShrink: 0,
-                          transition: 'border-color 0.2s'
-                        }}
-                        onMouseOver={e => e.target.style.borderColor = '#00bfae'}
-                        onMouseOut={e => e.target.style.borderColor = '#ddd'}
-                        onClick={e => {
-                          e.stopPropagation();
-                          setImageGallery({ images: property.photos, index });
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div style={{ 
-                display: 'flex', 
-                gap: '8px', 
-                marginTop: '12px',
-                justifyContent: 'flex-end'
-              }}>
-                <button
-                  className="shortlist-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    shortlist.includes(property.id) 
-                      ? handleRemoveFromShortlist(property.id)
-                      : handleAddToShortlist(property.id);
-                  }}
-                  style={{
-                    padding: '6px 12px',
-                    fontSize: '11px',
-                    backgroundColor: shortlist.includes(property.id) ? '#4caf50' : '#00bfae',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontWeight: 500,
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseOver={e => {
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                    e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
-                  }}
-                  onMouseOut={e => {
-                    e.currentTarget.style.transform = 'none';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
-                >
-                  {shortlist.includes(property.id) ? 'Shortlisted' : 'Add to Shortlist'}
-                </button>
-                
-                <button
-                  className="delete-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteClick(property);
-                  }}
-                  style={{
-                    padding: '6px 12px',
-                    fontSize: '11px',
-                    backgroundColor: '#f44336',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontWeight: 500,
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseOver={e => {
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                    e.currentTarget.style.backgroundColor = '#d32f2f';
-                    e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
-                  }}
-                  onMouseOut={e => {
-                    e.currentTarget.style.transform = 'none';
-                    e.currentTarget.style.backgroundColor = '#f44336';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
-                >
-                  Delete
-                </button>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Improved Image Gallery Modal */}
+      {/* Enhanced Media Gallery Modal */}
       {imageGallery.images.length > 0 && (
         <div
           style={{
@@ -901,18 +1022,43 @@ const PropertyGallery = () => {
               ‹
             </button>
 
-            {/* Main Image */}
-            <img
-              src={imageGallery.images[imageGallery.index]}
-              alt={`Property image ${imageGallery.index + 1}`}
-              style={{
-                maxWidth: window.innerWidth > 768 ? '80vw' : '85vw',
-                maxHeight: window.innerWidth > 768 ? '80vh' : '75vh',
-                borderRadius: '8px',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-                background: '#fff'
-              }}
-            />
+            {/* Main Media Display */}
+            {(() => {
+              const currentMediaUrl = imageGallery.images[imageGallery.index];
+              const isVideo = currentMediaUrl && (
+                currentMediaUrl.includes('.mp4') || 
+                currentMediaUrl.includes('.webm') || 
+                currentMediaUrl.includes('.mov') ||
+                currentMediaUrl.includes('video/upload')
+              );
+              
+              return isVideo ? (
+                <video
+                  src={currentMediaUrl}
+                  controls
+                  autoPlay
+                  style={{
+                    maxWidth: window.innerWidth > 768 ? '80vw' : '85vw',
+                    maxHeight: window.innerWidth > 768 ? '80vh' : '75vh',
+                    borderRadius: '8px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                    background: '#000'
+                  }}
+                />
+              ) : (
+                <img
+                  src={currentMediaUrl}
+                  alt={`Property media ${imageGallery.index + 1}`}
+                  style={{
+                    maxWidth: window.innerWidth > 768 ? '80vw' : '85vw',
+                    maxHeight: window.innerWidth > 768 ? '80vh' : '75vh',
+                    borderRadius: '8px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                    background: '#fff'
+                  }}
+                />
+              );
+            })()}
 
             {/* Next Button - Responsive Size */}
             <button
@@ -987,7 +1133,7 @@ const PropertyGallery = () => {
               ×
             </button>
 
-            {/* Image Counter */}
+            {/* Media Counter */}
             <div style={{
               position: 'absolute',
               bottom: window.innerWidth > 768 ? 20 : 10,
@@ -1063,19 +1209,39 @@ const PropertyGallery = () => {
 
             <h2 style={{ marginBottom: 16, paddingRight: 40 }}>{expandedProperty.title}</h2>
             
-            {expandedProperty.photos && expandedProperty.photos.length > 0 && (
-              <img
-                src={expandedProperty.photos[0]}
-                alt={expandedProperty.title}
-                style={{
-                  width: '100%',
-                  height: '200px',
-                  objectFit: 'cover',
-                  borderRadius: 8,
-                  marginBottom: 16
-                }}
-              />
-            )}
+            {(() => {
+              const expandedMedia = getPropertyMedia(expandedProperty);
+              const firstMedia = expandedMedia[0];
+              
+              if (!firstMedia) return null;
+              
+              return firstMedia.type === 'image' ? (
+                <img
+                  src={firstMedia.url}
+                  alt={expandedProperty.title}
+                  style={{
+                    width: '100%',
+                    height: '200px',
+                    objectFit: 'cover',
+                    borderRadius: 8,
+                    marginBottom: 16
+                  }}
+                />
+              ) : (
+                <video
+                  src={firstMedia.url}
+                  controls
+                  style={{
+                    width: '100%',
+                    height: '200px',
+                    objectFit: 'cover',
+                    borderRadius: 8,
+                    marginBottom: 16,
+                    backgroundColor: '#000'
+                  }}
+                />
+              );
+            })()}
 
             <div style={{ lineHeight: '1.6' }}>
               <p><strong>Address:</strong> {expandedProperty.address}</p>
@@ -1085,6 +1251,19 @@ const PropertyGallery = () => {
               <p><strong>Availability:</strong> {expandedProperty.availability}</p>
               <p><strong>Notes:</strong> {expandedProperty.notes || "No notes available"}</p>
               <p><strong>Added:</strong> {formatDate(expandedProperty.createdAt)}</p>
+              
+              {/* Media count info */}
+              {(() => {
+                const mediaCount = getPropertyMedia(expandedProperty);
+                if (mediaCount.length > 0) {
+                  const images = expandedProperty.photos ? expandedProperty.photos.length : 0;
+                  const videos = expandedProperty.videos ? expandedProperty.videos.length : 0;
+                  return (
+                    <p><strong>Media:</strong> {images} images, {videos} videos</p>
+                  );
+                }
+                return null;
+              })()}
             </div>
           </div>
         </div>

@@ -36,7 +36,7 @@ export async function getProperties() {
 
 export async function deleteProperty(id) {
   try {
-    // First, get the property data to extract image info
+    // First, get the property data to extract media info
     const docRef = doc(db, "properties", id);
     const docSnap = await getDoc(docRef);
     
@@ -47,33 +47,14 @@ export async function deleteProperty(id) {
     const propertyData = docSnap.data();
     console.log('Property to delete:', propertyData);
     
-    // Extract public IDs from Cloudinary URLs or imageDetails
-    const publicIds = [];
+    // Extract media info for deletion (both images and videos)
+    const mediaToDelete = extractMediaFromProperty(propertyData);
     
-    // Method 1: From imageDetails (if available)
-    if (propertyData.imageDetails && Array.isArray(propertyData.imageDetails)) {
-      propertyData.imageDetails.forEach(img => {
-        if (img.publicId) {
-          publicIds.push(img.publicId);
-        }
-      });
-    }
+    console.log('Media to delete:', mediaToDelete);
     
-    // Method 2: Extract from photo URLs (if imageDetails not available)
-    if (publicIds.length === 0 && propertyData.photos && Array.isArray(propertyData.photos)) {
-      propertyData.photos.forEach(photoUrl => {
-        const publicId = extractPublicIdFromUrl(photoUrl);
-        if (publicId) {
-          publicIds.push(publicId);
-        }
-      });
-    }
-    
-    console.log('Extracted public IDs for deletion:', publicIds);
-    
-    // Delete images from Cloudinary (if any)
-    if (publicIds.length > 0) {
-      await deleteCloudinaryImages(publicIds);
+    // Delete media from Cloudinary (if any)
+    if (mediaToDelete.length > 0) {
+      await deleteCloudinaryMedia(mediaToDelete);
     }
     
     // Delete the property document from Firestore
@@ -87,11 +68,108 @@ export async function deleteProperty(id) {
   }
 }
 
+// Enhanced function to extract both images and videos from property data
+function extractMediaFromProperty(propertyData) {
+  const mediaToDelete = [];
+  
+  // Method 1: From mediaDetails (preferred - contains type info)
+  if (propertyData.mediaDetails && Array.isArray(propertyData.mediaDetails)) {
+    propertyData.mediaDetails.forEach(media => {
+      if (media.publicId) {
+        mediaToDelete.push({
+          publicId: media.publicId,
+          resourceType: media.isVideo ? 'video' : 'image'
+        });
+      } else if (media.url) {
+        const extractedId = extractPublicIdFromUrl(media.url);
+        if (extractedId) {
+          mediaToDelete.push({
+            publicId: extractedId,
+            resourceType: media.isVideo ? 'video' : 'image'
+          });
+        }
+      }
+    });
+    return mediaToDelete; // Return early if mediaDetails exists
+  }
+  
+  // Method 2: From separate imageDetails and videoDetails arrays
+  if (propertyData.imageDetails && Array.isArray(propertyData.imageDetails)) {
+    propertyData.imageDetails.forEach(img => {
+      if (img.publicId) {
+        mediaToDelete.push({
+          publicId: img.publicId,
+          resourceType: 'image'
+        });
+      } else if (img.url) {
+        const extractedId = extractPublicIdFromUrl(img.url);
+        if (extractedId) {
+          mediaToDelete.push({
+            publicId: extractedId,
+            resourceType: 'image'
+          });
+        }
+      }
+    });
+  }
+  
+  if (propertyData.videoDetails && Array.isArray(propertyData.videoDetails)) {
+    propertyData.videoDetails.forEach(video => {
+      if (video.publicId) {
+        mediaToDelete.push({
+          publicId: video.publicId,
+          resourceType: 'video'
+        });
+      } else if (video.url) {
+        const extractedId = extractPublicIdFromUrl(video.url);
+        if (extractedId) {
+          mediaToDelete.push({
+            publicId: extractedId,
+            resourceType: 'video'
+          });
+        }
+      }
+    });
+  }
+  
+  // Method 3: Fallback to photos and videos arrays (extract from URLs)
+  if (mediaToDelete.length === 0) {
+    // Handle photos
+    if (propertyData.photos && Array.isArray(propertyData.photos)) {
+      propertyData.photos.forEach(photoUrl => {
+        const extractedId = extractPublicIdFromUrl(photoUrl);
+        if (extractedId) {
+          mediaToDelete.push({
+            publicId: extractedId,
+            resourceType: 'image'
+          });
+        }
+      });
+    }
+    
+    // Handle videos
+    if (propertyData.videos && Array.isArray(propertyData.videos)) {
+      propertyData.videos.forEach(videoUrl => {
+        const extractedId = extractPublicIdFromUrl(videoUrl);
+        if (extractedId) {
+          mediaToDelete.push({
+            publicId: extractedId,
+            resourceType: 'video'
+          });
+        }
+      });
+    }
+  }
+  
+  return mediaToDelete;
+}
+
 // Helper function to extract public_id from Cloudinary URL
 function extractPublicIdFromUrl(cloudinaryUrl) {
   try {
-    // Example URL: https://res.cloudinary.com/your_cloud/image/upload/v1234567890/househunt/properties/abc123.jpg
-    // Should extract: househunt/properties/abc123
+    // Example URLs:
+    // Image: https://res.cloudinary.com/your_cloud/image/upload/v1234567890/properties/abc123.jpg
+    // Video: https://res.cloudinary.com/your_cloud/video/upload/v1234567890/properties/abc123.mp4
     
     if (!cloudinaryUrl || typeof cloudinaryUrl !== 'string') {
       return null;
@@ -125,36 +203,50 @@ function extractPublicIdFromUrl(cloudinaryUrl) {
   }
 }
 
-// Function to delete images from Cloudinary
-async function deleteCloudinaryImages(publicIds) {
-  // If you have a backend server running
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL; // Adjust port if different
+// Enhanced function to delete both images and videos from Cloudinary
+async function deleteCloudinaryMedia(mediaArray) {
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   
-  for (const publicId of publicIds) {
+  for (const media of mediaArray) {
     try {
-      console.log('Deleting from Cloudinary:', publicId);
+      console.log(`Deleting ${media.resourceType} from Cloudinary:`, media.publicId);
       
-      const response = await fetch(`${BACKEND_URL}/delete-image`, {
+      // Use different endpoint based on resource type
+      const endpoint = media.resourceType === 'video' ? '/delete-video' : '/delete-image';
+      
+      const response = await fetch(`${BACKEND_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ publicId })
+        body: JSON.stringify({ 
+          publicId: media.publicId,
+          resourceType: media.resourceType 
+        })
       });
       
       if (!response.ok) {
-        console.warn(`Failed to delete image ${publicId} from Cloudinary:`, response.statusText);
-        // Continue with other deletions even if one fails
+        console.warn(`Failed to delete ${media.resourceType} ${media.publicId} from Cloudinary:`, response.statusText);
         continue;
       }
       
       const result = await response.json();
-      console.log(`Successfully deleted image ${publicId} from Cloudinary:`, result);
+      console.log(`Successfully deleted ${media.resourceType} ${media.publicId} from Cloudinary:`, result);
     } catch (error) {
-      console.warn(`Error deleting image ${publicId} from Cloudinary:`, error.message);
-      // Continue with other deletions even if one fails
+      console.warn(`Error deleting ${media.resourceType} ${media.publicId} from Cloudinary:`, error.message);
     }
   }
+}
+
+// Legacy function to delete images from Cloudinary (for backward compatibility)
+async function deleteCloudinaryImages(publicIds) {
+  // Convert to new format and call the enhanced function
+  const mediaArray = publicIds.map(publicId => ({
+    publicId,
+    resourceType: 'image'
+  }));
+  
+  await deleteCloudinaryMedia(mediaArray);
 }
 
 // Bulk delete function for multiple properties

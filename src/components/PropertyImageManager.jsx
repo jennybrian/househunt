@@ -6,6 +6,29 @@ import { addProperty } from "../services/firestore";
 const CLOUD_NAME = "dwbuqswz2";
 const UPLOAD_PRESET = "househunt_unsigned";
 
+// Enhanced validation for both images and videos
+const validateMediaFile = (file) => {
+  const maxSize = 50 * 1024 * 1024; // 50MB for videos, more lenient
+  const imageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const videoTypes = ['video/mp4', 'video/webm', 'video/mov', 'video/avi', 'video/quicktime'];
+  const allowedTypes = [...imageTypes, ...videoTypes];
+
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error(`Unsupported file type: ${file.type}`);
+  }
+
+  if (file.size > maxSize) {
+    throw new Error(`File too large: ${(file.size / 1024 / 1024).toFixed(1)}MB (max 50MB)`);
+  }
+
+  // Additional validation for images (smaller size limit)
+  if (imageTypes.includes(file.type) && file.size > 10 * 1024 * 1024) {
+    throw new Error(`Image too large: ${(file.size / 1024 / 1024).toFixed(1)}MB (max 10MB for images)`);
+  }
+
+  return true;
+};
+
 const PropertyImageManager = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -19,16 +42,20 @@ const PropertyImageManager = () => {
     notes: "",
   });
 
-  // ✅ Unsigned Cloudinary upload
-  const uploadImageToCloudinary = (file, index) => {
+  // Enhanced Cloudinary upload for both images and videos
+  const uploadMediaToCloudinary = (file, index) => {
     return new Promise((resolve, reject) => {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("upload_preset", UPLOAD_PRESET);
       formData.append("folder", "properties");
+      
+      // Determine resource type
+      const isVideo = file.type.startsWith('video/');
+      const resourceType = isVideo ? 'video' : 'image';
 
       const xhr = new XMLHttpRequest();
-      xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`);
+      xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`);
 
       xhr.upload.addEventListener("progress", (event) => {
         if (event.lengthComputable) {
@@ -43,7 +70,12 @@ const PropertyImageManager = () => {
 
       xhr.onload = () => {
         if (xhr.status === 200) {
-          resolve(JSON.parse(xhr.responseText));
+          const result = JSON.parse(xhr.responseText);
+          resolve({
+            ...result,
+            mediaType: resourceType,
+            isVideo: isVideo
+          });
         } else {
           reject(new Error("Upload failed"));
         }
@@ -61,7 +93,7 @@ const PropertyImageManager = () => {
 
     files.forEach((file, index) => {
       try {
-        validateImageFile(file);
+        validateMediaFile(file);
         validFiles.push(file);
       } catch (error) {
         errors.push(`File ${index + 1}: ${error.message}`);
@@ -76,9 +108,9 @@ const PropertyImageManager = () => {
     setUploadProgress(new Array(validFiles.length).fill(0));
   };
 
-  const uploadImagesAndCreateProperty = async () => {
+  const uploadMediaAndCreateProperty = async () => {
     if (selectedFiles.length === 0) {
-      alert("Please select at least one image");
+      alert("Please select at least one image or video");
       return;
     }
 
@@ -88,19 +120,28 @@ const PropertyImageManager = () => {
     }
 
     setUploading(true);
-    const uploadedImageUrls = [];
+    const uploadedMediaUrls = [];
 
     try {
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
-        const result = await uploadImageToCloudinary(file, i);
-        uploadedImageUrls.push({
+        const result = await uploadMediaToCloudinary(file, i);
+        uploadedMediaUrls.push({
           url: result.secure_url,
           publicId: result.public_id,
           originalName: file.name,
           size: result.bytes,
+          mediaType: result.mediaType,
+          isVideo: result.isVideo,
+          duration: result.duration || null, // Video duration if available
+          width: result.width || null,
+          height: result.height || null,
         });
       }
+
+      // Separate images and videos for backwards compatibility
+      const images = uploadedMediaUrls.filter(media => !media.isVideo);
+      const videos = uploadedMediaUrls.filter(media => media.isVideo);
 
       const propertyPayload = {
         ...propertyData,
@@ -108,14 +149,17 @@ const PropertyImageManager = () => {
         coords: { lat: -1.2833, lng: 36.8167 }, // Default Nairobi coords
         bills: { water: 0, garbage: 0 },
         availability: "available",
-        photos: uploadedImageUrls.map((img) => img.url),
-        imageDetails: uploadedImageUrls,
+        photos: images.map((img) => img.url), // Backwards compatibility
+        videos: videos.map((vid) => vid.url), // New video field
+        mediaDetails: uploadedMediaUrls, // All media with metadata
+        imageDetails: images, // Backwards compatibility
+        videoDetails: videos, // New video details
       };
 
       const propertyRef = await addProperty(propertyPayload);
 
       alert(
-        `✅ Property created!\nID: ${propertyRef.id}\nImages uploaded: ${uploadedImageUrls.length}`
+        `✅ Property created!\nID: ${propertyRef.id}\nImages: ${images.length}\nVideos: ${videos.length}`
       );
 
       // Reset
@@ -142,6 +186,21 @@ const PropertyImageManager = () => {
       ...prev,
       [field]: value,
     }));
+  };
+
+  // Helper function to get file icon
+  const getFileIcon = (file) => {
+    if (file.type.startsWith('video/')) return '🎥';
+    if (file.type.startsWith('image/')) return '📷';
+    return '📄';
+  };
+
+  // Helper function to format file size
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024 * 1024) {
+      return `${(bytes / 1024).toFixed(1)} KB`;
+    }
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
   };
 
   // Common input styles
@@ -189,7 +248,7 @@ const PropertyImageManager = () => {
           margin: "0 0 20px 0",
         }}
       >
-        Add New Property with Images
+        Add New Property with Images & Videos
       </h2>
 
       {/* Property Title */}
@@ -300,13 +359,13 @@ const PropertyImageManager = () => {
         />
       </div>
 
-      {/* Image Upload Section */}
+      {/* Media Upload Section */}
       <div style={{ marginBottom: 20 }}>
-        <label style={labelStyle}>Property Images *</label>
+        <label style={labelStyle}>Property Images & Videos *</label>
         <input
           type="file"
           multiple
-          accept="image/*"
+          accept="image/*,video/*"
           onChange={handleFileSelect}
           style={{
             ...inputStyle,
@@ -315,7 +374,7 @@ const PropertyImageManager = () => {
           }}
         />
         <small style={{ color: "#666", fontSize: 12, display: "block", marginTop: 4 }}>
-          Select multiple images (JPEG, PNG, WebP). Max 10MB per file.
+          Select images (JPEG, PNG, WebP - max 10MB) and videos (MP4, WebM, MOV - max 50MB)
         </small>
       </div>
 
@@ -328,60 +387,64 @@ const PropertyImageManager = () => {
             marginBottom: 12,
             fontSize: 16,
           }}>
-            Selected Images ({selectedFiles.length})
+            Selected Media ({selectedFiles.length})
           </h3>
-          {selectedFiles.map((file, index) => (
-            <div
-              key={index}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginBottom: 8,
-                padding: 10,
-                backgroundColor: "#f8fffe",
-                borderRadius: 8,
-                border: "1px solid #e0f2f1",
-              }}
-            >
-              <span 
-                style={{ 
-                  flex: 1, 
-                  fontSize: 13,
-                  wordBreak: "break-word",
-                  marginRight: 8,
+          {selectedFiles.map((file, index) => {
+            const isVideo = file.type.startsWith('video/');
+            return (
+              <div
+                key={index}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: 8,
+                  padding: 10,
+                  backgroundColor: isVideo ? "#fff3e0" : "#f8fffe",
+                  borderRadius: 8,
+                  border: `1px solid ${isVideo ? "#ffcc80" : "#e0f2f1"}`,
                 }}
               >
-                📷 {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
-              </span>
-              {uploading && (
-                <div
-                  style={{
-                    width: "80px",
-                    height: "6px",
-                    backgroundColor: "#e0f2f1",
-                    borderRadius: "3px",
-                    overflow: "hidden",
+                <span 
+                  style={{ 
+                    flex: 1, 
+                    fontSize: 13,
+                    wordBreak: "break-word",
+                    marginRight: 8,
                   }}
                 >
+                  {getFileIcon(file)} {file.name} ({formatFileSize(file.size)})
+                  {isVideo && <span style={{ color: "#f57c00", fontSize: 11, display: "block" }}>Video</span>}
+                </span>
+                {uploading && (
                   <div
                     style={{
-                      width: `${uploadProgress[index]}%`,
-                      height: "100%",
-                      backgroundColor: "#00bfae",
+                      width: "80px",
+                      height: "6px",
+                      backgroundColor: isVideo ? "#ffcc80" : "#e0f2f1",
                       borderRadius: "3px",
-                      transition: "width 0.3s ease",
+                      overflow: "hidden",
                     }}
-                  />
-                </div>
-              )}
-            </div>
-          ))}
+                  >
+                    <div
+                      style={{
+                        width: `${uploadProgress[index]}%`,
+                        height: "100%",
+                        backgroundColor: isVideo ? "#f57c00" : "#00bfae",
+                        borderRadius: "3px",
+                        transition: "width 0.3s ease",
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
       {/* Upload Button */}
       <button
-        onClick={uploadImagesAndCreateProperty}
+        onClick={uploadMediaAndCreateProperty}
         disabled={uploading || selectedFiles.length === 0}
         style={{
           width: "100%",
@@ -421,7 +484,7 @@ const PropertyImageManager = () => {
           color: "#666",
           fontSize: 14,
         }}>
-          Uploading {selectedFiles.length} images and saving to database...
+          Uploading {selectedFiles.length} files (images & videos) and saving to database...
         </div>
       )}
     </div>
