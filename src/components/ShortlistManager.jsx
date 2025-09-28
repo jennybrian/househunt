@@ -11,6 +11,34 @@ const ShortlistManager = () => {
   const [loading, setLoading] = useState(true);
   const [shareToken, setShareToken] = useState(null);
   const [shareLinks, setShareLinks] = useState(null);
+  const [selectedMediaGallery, setSelectedMediaGallery] = useState({ media: [], index: 0 });
+
+  // Helper function to get all media (photos + videos) for a property
+  const getPropertyMedia = (property) => {
+    const media = [];
+    
+    // Add photos with type indicator
+    if (property.photos && property.photos.length > 0) {
+      property.photos.forEach((url) => {
+        media.push({
+          url,
+          type: 'image'
+        });
+      });
+    }
+    
+    // Add videos with type indicator
+    if (property.videos && property.videos.length > 0) {
+      property.videos.forEach((url) => {
+        media.push({
+          url,
+          type: 'video'
+        });
+      });
+    }
+    
+    return media;
+  };
 
   // Load all properties and shortlist from localStorage
   useEffect(() => {
@@ -135,76 +163,403 @@ const ShortlistManager = () => {
               gap: 16,
             }}
           >
-            {shortlistedProperties.map((property) => (
-              <div
-                key={property.id}
-                style={{
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  background: "#fff",
-                  overflow: "hidden",
-                  backgroundColor: "white",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                  position: "relative",
-                  marginBottom: 12,
+            {shortlistedProperties.map((property) => {
+              const allMedia = getPropertyMedia(property);
+              const firstMediaItem = allMedia[0];
+              
+              return (
+                <div
+                  key={property.id}
+                  style={{
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                    background: "#fff",
+                    overflow: "hidden",
+                    backgroundColor: "white",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                    position: "relative",
+                    marginBottom: 12,
+                  }}
+                >
+                  {/* Enhanced Media Display - Shows first image or video */}
+                  {firstMediaItem ? (
+                    <div style={{ position: 'relative' }}>
+                      {firstMediaItem.type === 'image' ? (
+                        <img
+                          src={firstMediaItem.url}
+                          alt={property.title}
+                          style={{
+                            width: "100%",
+                            height: 160,
+                            objectFit: "cover",
+                            cursor: 'pointer'
+                          }}
+                          onClick={() => {
+                            setSelectedMediaGallery({ 
+                              media: allMedia.map(m => m.url), 
+                              index: 0 
+                            });
+                          }}
+                        />
+                      ) : (
+                        <video
+                          src={firstMediaItem.url}
+                          style={{
+                            width: "100%",
+                            height: 160,
+                            objectFit: "cover",
+                            cursor: 'pointer'
+                          }}
+                          onClick={() => {
+                            setSelectedMediaGallery({ 
+                              media: allMedia.map(m => m.url), 
+                              index: 0 
+                            });
+                          }}
+                          onMouseEnter={e => e.target.play()}
+                          onMouseLeave={e => {
+                            e.target.pause();
+                            e.target.currentTime = 0;
+                          }}
+                          muted
+                          loop
+                        />
+                      )}
+                      
+                      {/* Media count indicator */}
+                      {allMedia.length > 1 && (
+                        <div style={{
+                          position: 'absolute',
+                          bottom: '8px',
+                          right: '8px',
+                          backgroundColor: 'rgba(0,0,0,0.7)',
+                          color: 'white',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          {property.photos && property.photos.length > 0 && (
+                            <span>📷{property.photos.length}</span>
+                          )}
+                          {property.videos && property.videos.length > 0 && (
+                            <span>🎥{property.videos.length}</span>
+                          )}
+                        </div>
+                      )}
 
-                }}
-              >
-                {property.photos && property.photos.length > 0 && (
-                  <img
-                    src={property.photos[0]}
-                    alt={property.title}
-                    style={{
-                      width: "100%",
+                      {/* Video play indicator */}
+                      {firstMediaItem.type === 'video' && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '8px',
+                          left: '8px',
+                          backgroundColor: 'rgba(0,0,0,0.7)',
+                          color: 'white',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}>
+                          🎥 Video
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{
+                      width: '100%',
                       height: 160,
-                      objectFit: "cover",
-                    }}
-                  />
-                )}
-                <div style={{ padding: 12 }}>
-                  <h3 style={{ margin: "0 0 8px 0", fontSize: 18 }}>{property.title}</h3>
-                  <div style={{ fontSize: 14, color: "#666", marginBottom: 4 }}>
-                    📍 {property.address}
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                    <span
+                      backgroundColor: '#f0f0f0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#666',
+                      fontSize: '14px'
+                    }}>
+                      No media available
+                    </div>
+                  )}
+
+                  <div style={{ padding: 12 }}>
+                    <h3 style={{ margin: "0 0 8px 0", fontSize: 18 }}>{property.title}</h3>
+                    <div style={{ fontSize: 14, color: "#666", marginBottom: 4 }}>
+                      📍 {property.address}
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                      <span
+                        style={{
+                          backgroundColor: "#e3f2fd",
+                          padding: "3px 8px",
+                          borderRadius: "4px",
+                          fontSize: "12px",
+                          color: "#1976d2",
+                        }}
+                      >
+                        {property.type}
+                      </span>
+                      <span style={{ fontWeight: "bold", color: "#2e7d32" }}>
+                        {new Intl.NumberFormat("en-KE", {
+                          style: "currency",
+                          currency: "KES",
+                          minimumFractionDigits: 0,
+                        }).format(property.price)}
+                      </span>
+                    </div>
+
+                    {/* Media Gallery Preview */}
+                    {allMedia.length > 1 && (
+                      <div style={{ marginBottom: 12 }}>
+                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px', fontWeight: 500 }}>
+                          Media ({allMedia.length} items):
+                        </div>
+                        <div style={{ display: 'flex', gap: '6px', overflowX: 'auto' }}>
+                          {allMedia.slice(0, 4).map((mediaItem, index) => (
+                            <div
+                              key={index}
+                              style={{
+                                position: 'relative',
+                                width: '40px',
+                                height: '40px',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                border: '2px solid #ddd',
+                                flexShrink: 0,
+                                transition: 'border-color 0.2s',
+                                overflow: 'hidden'
+                              }}
+                              onMouseOver={e => e.currentTarget.style.borderColor = '#00bfae'}
+                              onMouseOut={e => e.currentTarget.style.borderColor = '#ddd'}
+                              onClick={() => {
+                                setSelectedMediaGallery({ 
+                                  media: allMedia.map(m => m.url), 
+                                  index 
+                                });
+                              }}
+                            >
+                              {mediaItem.type === 'image' ? (
+                                <img
+                                  src={mediaItem.url}
+                                  alt={`${property.title} - Media ${index + 1}`}
+                                  style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover'
+                                  }}
+                                />
+                              ) : (
+                                <video
+                                  src={mediaItem.url}
+                                  style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover'
+                                  }}
+                                  muted
+                                />
+                              )}
+                              {mediaItem.type === 'video' && (
+                                <div style={{
+                                  position: 'absolute',
+                                  top: '1px',
+                                  right: '1px',
+                                  backgroundColor: 'rgba(0,0,0,0.7)',
+                                  color: 'white',
+                                  borderRadius: '2px',
+                                  padding: '1px 2px',
+                                  fontSize: '6px'
+                                }}>
+                                  🎥
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => removeFromShortlist(property.id)}
                       style={{
-                        backgroundColor: "#e3f2fd",
-                        padding: "3px 8px",
-                        borderRadius: "4px",
-                        fontSize: "12px",
-                        color: "#1976d2",
+                        padding: "6px 12px",
+                        background: "#f44336",
+                        color: "white",
+                        border: "none",
+                        borderRadius: 4,
+                        cursor: "pointer",
+                        fontSize: 13,
                       }}
                     >
-                      {property.type}
-                    </span>
-                    <span style={{ fontWeight: "bold", color: "#2e7d32" }}>
-                      {new Intl.NumberFormat("en-KE", {
-                        style: "currency",
-                        currency: "KES",
-                        minimumFractionDigits: 0,
-                      }).format(property.price)}
-                    </span>
+                      Remove
+                    </button>
                   </div>
-                  <button
-                    onClick={() => removeFromShortlist(property.id)}
-                    style={{
-                      padding: "6px 12px",
-                      background: "#f44336",
-                      color: "white",
-                      border: "none",
-                      borderRadius: 4,
-                      cursor: "pointer",
-                      fontSize: 13,
-                    }}
-                  >
-                    Remove
-                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </>
+      )}
+
+      {/* Media Gallery Modal */}
+      {selectedMediaGallery.media.length > 0 && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.9)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 4000
+          }}
+          onClick={() => setSelectedMediaGallery({ media: [], index: 0 })}
+        >
+          <div
+            style={{
+              position: 'relative',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Previous Button */}
+            <button
+              onClick={() =>
+                setSelectedMediaGallery(g => ({
+                  ...g,
+                  index: g.index > 0 ? g.index - 1 : g.media.length - 1
+                }))
+              }
+              style={{
+                position: 'absolute',
+                left: 20,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'rgba(0,0,0,0.7)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '50%',
+                width: 48,
+                height: 48,
+                fontSize: 24,
+                cursor: 'pointer',
+                zIndex: 1
+              }}
+            >
+              ‹
+            </button>
+
+            {/* Main Media Display */}
+            {(() => {
+              const currentMediaUrl = selectedMediaGallery.media[selectedMediaGallery.index];
+              const isVideo = currentMediaUrl && (
+                currentMediaUrl.includes('.mp4') || 
+                currentMediaUrl.includes('.webm') || 
+                currentMediaUrl.includes('.mov') ||
+                currentMediaUrl.includes('video/upload')
+              );
+              
+              return isVideo ? (
+                <video
+                  src={currentMediaUrl}
+                  controls
+                  autoPlay
+                  style={{
+                    maxWidth: '80vw',
+                    maxHeight: '80vh',
+                    borderRadius: '8px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                    background: '#000'
+                  }}
+                />
+              ) : (
+                <img
+                  src={currentMediaUrl}
+                  alt={`Shortlist media ${selectedMediaGallery.index + 1}`}
+                  style={{
+                    maxWidth: '80vw',
+                    maxHeight: '80vh',
+                    borderRadius: '8px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                    background: '#fff'
+                  }}
+                />
+              );
+            })()}
+
+            {/* Next Button */}
+            <button
+              onClick={() =>
+                setSelectedMediaGallery(g => ({
+                  ...g,
+                  index: g.index < g.media.length - 1 ? g.index + 1 : 0
+                }))
+              }
+              style={{
+                position: 'absolute',
+                right: 20,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'rgba(0,0,0,0.7)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '50%',
+                width: 48,
+                height: 48,
+                fontSize: 24,
+                cursor: 'pointer',
+                zIndex: 1
+              }}
+            >
+              ›
+            </button>
+
+            {/* Close Button */}
+            <button
+              onClick={() => setSelectedMediaGallery({ media: [], index: 0 })}
+              style={{
+                position: 'absolute',
+                top: 20,
+                right: 20,
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '50%',
+                width: 40,
+                height: 40,
+                fontSize: 20,
+                cursor: 'pointer'
+              }}
+            >
+              ×
+            </button>
+
+            {/* Media Counter */}
+            <div style={{
+              position: 'absolute',
+              bottom: 20,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: 'rgba(0,0,0,0.7)',
+              color: 'white',
+              padding: '6px 12px',
+              borderRadius: '16px',
+              fontSize: '14px',
+              fontWeight: 500
+            }}>
+              {selectedMediaGallery.index + 1} of {selectedMediaGallery.media.length}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
