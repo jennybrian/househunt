@@ -17,34 +17,7 @@ const ShortlistViewer = ({ shareToken }) => {
   const [shortlist, setShortlist] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [mediaGallery, setMediaGallery] = useState({ media: [], index: 0 });
-
-  // Helper function to get all media (photos + videos) for a property
-  const getPropertyMedia = (property) => {
-    const media = [];
-    
-    // Add photos with type indicator
-    if (property.photos && property.photos.length > 0) {
-      property.photos.forEach((url) => {
-        media.push({
-          url,
-          type: 'image'
-        });
-      });
-    }
-    
-    // Add videos with type indicator
-    if (property.videos && property.videos.length > 0) {
-      property.videos.forEach((url) => {
-        media.push({
-          url,
-          type: 'video'
-        });
-      });
-    }
-    
-    return media;
-  };
+  const [imageGallery, setImageGallery] = useState({ images: [], index: 0 });
 
   useEffect(() => {
     if (shareToken) {
@@ -159,15 +132,11 @@ const ShortlistViewer = ({ shareToken }) => {
           gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
           gap: '24px'
         }}>
-          {shortlist.properties.map((property, index) => {
-            const allMedia = getPropertyMedia(property);
-            const hasMedia = allMedia.length > 0;
-            
-            return (
-              <div
-                key={property.id}
+          {shortlist.properties.map((property, index) => (
+            <div
+              key={property.id}
                 style={{
-                    border: "1px solid #ddd",
+                    border: "1px solid #ddd", // lighter gray than #ddd for a fresher look
                     borderRadius: "8px",
                     overflow: "hidden",
                     backgroundColor: "white",
@@ -176,7 +145,8 @@ const ShortlistViewer = ({ shareToken }) => {
                     display: "flex",
                     flexDirection: "column",
                     transition: "box-shadow 0.2s, transform 0.2s",
-                    cursor: hasMedia ? "pointer" : "default",
+                    cursor:
+                    property.photos && property.photos.length > 0 ? "pointer" : "default",
                 }}
                 onMouseOver={(e) => {
                     e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.18)";
@@ -186,165 +156,79 @@ const ShortlistViewer = ({ shareToken }) => {
                     e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
                     e.currentTarget.style.transform = "none";
                 }}
-              >
-                {/* Property Number Badge */}
-                <div style={{
-                  position: 'absolute',
-                  top: '10px',
-                  left: '10px',
-                  backgroundColor: 'rgba(25, 118, 210, 0.85)',
-                  color: 'white',
-                  padding: '4px 10px',
-                  borderRadius: '4px',
-                  fontFamily: 'Inter, Nunito, Arial, sans-serif',
-                  fontSize: '13px',
-                  zIndex: 1
-                }}>
-                  #{index + 1}
-                </div>
+            >
+              {/* Property Number Badge */}
+              <div style={{
+                position: 'absolute',
+                top: '10px',
+                left: '10px',
+                backgroundColor: 'rgba(25, 118, 210, 0.85)',
+                color: 'white',
+                padding: '4px 10px',
+                borderRadius: '4px',
+                fontFamily: 'Inter, Nunito, Arial, sans-serif',
+                fontSize: '13px',
+                zIndex: 1
+              }}>
+                #{index + 1}
+              </div>
 
-                {/* Enhanced Media Gallery Display */}
-                {hasMedia ? (
-                  <div
-                    style={{
-                      width: '100%',
-                      height: 220,
-                      overflow: 'hidden',
-                      display: 'flex',
-                      cursor: 'pointer',
-                      position: 'relative'
-                    }}
-                    onClick={() => setMediaGallery({ media: allMedia.map(m => m.url), index: 0 })}
-                  >
-                    {allMedia.slice(0, 3).map((mediaItem, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          width: `${100 / Math.min(3, allMedia.length)}%`,
-                          height: '220px',
-                          position: 'relative',
-                          borderRight: i < allMedia.length - 1 ? '2px solid #fff' : 'none'
-                        }}
-                      >
-                        {mediaItem.type === 'image' ? (
-                          <img
-                            src={mediaItem.url}
-                            alt={property.title}
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover'
-                            }}
-                          />
-                        ) : (
-                          <video
-                            src={mediaItem.url}
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover'
-                            }}
-                            onMouseEnter={e => e.target.play()}
-                            onMouseLeave={e => {
-                              e.target.pause();
-                              e.target.currentTime = 0;
-                            }}
-                            muted
-                            loop
-                          />
-                        )}
-                        
-                        {/* Video indicator overlay */}
-                        {mediaItem.type === 'video' && (
-                          <div style={{
-                            position: 'absolute',
-                            top: '8px',
-                            right: '8px',
-                            backgroundColor: 'rgba(0,0,0,0.7)',
-                            color: 'white',
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}>
-                            🎥
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                    
-                    {/* Media count indicator */}
-                    {allMedia.length > 3 && (
-                      <div style={{
-                        position: 'absolute',
-                        bottom: '8px',
-                        right: '8px',
-                        backgroundColor: 'rgba(0,0,0,0.7)',
-                        color: 'white',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}>
-                        +{allMedia.length - 3} more
-                      </div>
-                    )}
-                    
-                    {/* Mixed media type indicator */}
-                    {property.photos && property.videos && (
-                      <div style={{
-                        position: 'absolute',
-                        bottom: '8px',
-                        left: '8px',
-                        backgroundColor: 'rgba(0,0,0,0.7)',
-                        color: 'white',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}>
-                        {property.photos.length > 0 && <span>📷{property.photos.length}</span>}
-                        {property.videos.length > 0 && <span>🎥{property.videos.length}</span>}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div style={{
+              {/* Property Image Gallery */}
+              {property.photos && property.photos.length > 0 ? (
+                <div
+                  style={{
                     width: '100%',
-                    height: '220px',
-                    backgroundColor: '#f0f0f0',
+                    height: 220,
+                    overflow: 'hidden',
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#666'
-                  }}>
-                    No media available
-                  </div>
-                )}
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => setImageGallery({ images: property.photos, index: 0 })}
+                >
+                  {property.photos.slice(0, 3).map((url, i) => (
+                    <img
+                      key={i}
+                      src={url}
+                      alt={property.title}
+                      style={{
+                        width: `${100 / Math.min(3, property.photos.length)}%`,
+                        height: '220px',
+                        objectFit: 'cover',
+                        borderRight: i < property.photos.length - 1 ? '2px solid #fff' : 'none'
+                      }}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div style={{
+                  width: '100%',
+                  height: '220px',
+                  backgroundColor: '#f0f0f0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#666'
+                }}>
+                  No image available
+                </div>
+              )}
 
-                {/* Property Teaser Details */}
-                <div style={{ padding: '18px 16px 24px 16px', flex: 1 }}>
-                  <h3 style={{ margin: '0px 0px 8px', fontSize: '18px', fontFamily: 'Inter, Nunito, Arial, sans-serif', color: '#000000' }}>
-                    {property.title}
-                  </h3>
-                  <div style={{ fontFamily: 'Inter, Nunito, Arial, sans-serif', fontSize: '14px', color: '#555', marginBottom: '4px 0px; color: rgb(102, 102, 102)' }}>
-                    🗺️ {extractGeneralArea(property.address)}
-                  </div>
+              {/* Property Teaser Details */}
+              <div style={{ padding: '18px 16px 24px 16px', flex: 1 }}>
+                <h3 style={{ margin: '0px 0px 8px', fontSize: '18px', fontFamily: 'Inter, Nunito, Arial, sans-serif', color: '#000000' }}>
+                  {property.title}
+                </h3>
+                <div style={{ fontFamily: 'Inter, Nunito, Arial, sans-serif', fontSize: '14px', color: '#555', marginBottom: '4px 0px; color: rgb(102, 102, 102)' }}>
+                  🗺️ {extractGeneralArea(property.address)}
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Enhanced Media Gallery Modal */}
-      {mediaGallery.media.length > 0 && (
+      {/* Image Gallery Modal */}
+      {imageGallery.images.length > 0 && (
         <div
           style={{
             position: 'fixed',
@@ -358,7 +242,7 @@ const ShortlistViewer = ({ shareToken }) => {
             justifyContent: 'center',
             zIndex: 4000
           }}
-          onClick={() => setMediaGallery({ media: [], index: 0 })}
+          onClick={() => setImageGallery({ images: [], index: 0 })}
         >
           <div
             style={{
@@ -374,26 +258,26 @@ const ShortlistViewer = ({ shareToken }) => {
             }}
             onClick={e => e.stopPropagation()}
           >
-            {/* Previous Button - Mobile Optimized */}
+            {/* Previous Button */}
             <button
               onClick={() =>
-                setMediaGallery(g => ({
+                setImageGallery(g => ({
                   ...g,
-                  index: g.index > 0 ? g.index - 1 : g.media.length - 1
+                  index: g.index > 0 ? g.index - 1 : g.images.length - 1
                 }))
               }
               style={{
                 position: 'absolute',
-                left: window.innerWidth > 768 ? 20 : 5,
+                left: window.innerWidth > 768 ? 20 : 8,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                background: 'rgba(0,0,0,0.6)',
+                background: 'rgba(0,0,0,0.7)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '50%',
-                width: window.innerWidth > 768 ? 40 : 28,
-                height: window.innerWidth > 768 ? 40 : 28,
-                fontSize: window.innerWidth > 768 ? 20 : 14,
+                width: window.innerWidth > 768 ? 48 : 36,
+                height: window.innerWidth > 768 ? 48 : 36,
+                fontSize: window.innerWidth > 768 ? 24 : 18,
                 cursor: 'pointer',
                 zIndex: 1,
                 display: 'flex',
@@ -406,7 +290,7 @@ const ShortlistViewer = ({ shareToken }) => {
                 e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
               }}
               onMouseOut={e => {
-                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.6)';
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.7)';
                 e.currentTarget.style.transform = 'translateY(-50%)';
               }}
               title="Previous"
@@ -414,68 +298,39 @@ const ShortlistViewer = ({ shareToken }) => {
               ‹
             </button>
 
-            {/* Main Media Display - Fixed Sizing */}
-            {(() => {
-              const currentMediaUrl = mediaGallery.media[mediaGallery.index];
-              const isVideo = currentMediaUrl && (
-                currentMediaUrl.includes('.mp4') || 
-                currentMediaUrl.includes('.webm') || 
-                currentMediaUrl.includes('.mov') ||
-                currentMediaUrl.includes('video/upload')
-              );
-              
-              return isVideo ? (
-                <video
-                  src={currentMediaUrl}
-                  controls
-                  autoPlay
-                  style={{
-                    maxWidth: window.innerWidth > 768 ? '75vw' : '90vw',
-                    maxHeight: window.innerWidth > 768 ? '70vh' : '60vh',
-                    width: 'auto',
-                    height: 'auto',
-                    borderRadius: '8px',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-                    background: '#000'
-                  }}
-                />
-              ) : (
-                <img
-                  src={currentMediaUrl}
-                  alt={`Property media ${mediaGallery.index + 1}`}
-                  style={{
-                    maxWidth: window.innerWidth > 768 ? '75vw' : '90vw',
-                    maxHeight: window.innerWidth > 768 ? '70vh' : '60vh',
-                    width: 'auto',
-                    height: 'auto',
-                    borderRadius: '8px',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-                    background: '#fff'
-                  }}
-                />
-              );
-            })()}
+            {/* Main Image */}
+            <img
+              src={imageGallery.images[imageGallery.index]}
+              alt={`Property image ${imageGallery.index + 1}`}
+              style={{
+                maxWidth: window.innerWidth > 768 ? '80vw' : '85vw',
+                maxHeight: window.innerWidth > 768 ? '80vh' : '75vh',
+                borderRadius: '8px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                background: '#fff'
+              }}
+            />
 
-            {/* Next Button - Mobile Optimized */}
+            {/* Next Button */}
             <button
               onClick={() =>
-                setMediaGallery(g => ({
+                setImageGallery(g => ({
                   ...g,
-                  index: g.index < g.media.length - 1 ? g.index + 1 : 0
+                  index: g.index < g.images.length - 1 ? g.index + 1 : 0
                 }))
               }
               style={{
                 position: 'absolute',
-                right: window.innerWidth > 768 ? 20 : 5,
+                right: window.innerWidth > 768 ? 20 : 8,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                background: 'rgba(0,0,0,0.6)',
+                background: 'rgba(0,0,0,0.7)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '50%',
-                width: window.innerWidth > 768 ? 40 : 28,
-                height: window.innerWidth > 768 ? 40 : 28,
-                fontSize: window.innerWidth > 768 ? 20 : 14,
+                width: window.innerWidth > 768 ? 48 : 36,
+                height: window.innerWidth > 768 ? 48 : 36,
+                fontSize: window.innerWidth > 768 ? 24 : 18,
                 cursor: 'pointer',
                 zIndex: 1,
                 display: 'flex',
@@ -488,7 +343,7 @@ const ShortlistViewer = ({ shareToken }) => {
                 e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
               }}
               onMouseOut={e => {
-                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.6)';
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.7)';
                 e.currentTarget.style.transform = 'translateY(-50%)';
               }}
               title="Next"
@@ -496,33 +351,32 @@ const ShortlistViewer = ({ shareToken }) => {
               ›
             </button>
 
-            {/* Close Button - Mobile Optimized */}
+            {/* Close Button */}
             <button
-              onClick={() => setMediaGallery({ media: [], index: 0 })}
+              onClick={() => setImageGallery({ images: [], index: 0 })}
               style={{
                 position: 'absolute',
-                top: window.innerWidth > 768 ? 15 : 8,
-                right: window.innerWidth > 768 ? 15 : 8,
-                backgroundColor: 'rgba(244,67,54,0.8)',
+                top: window.innerWidth > 768 ? 20 : 10,
+                right: window.innerWidth > 768 ? 20 : 10,
+                backgroundColor: 'rgba(0,0,0,0.7)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '50%',
-                width: window.innerWidth > 768 ? 35 : 26,
-                height: window.innerWidth > 768 ? 35 : 26,
-                fontSize: window.innerWidth > 768 ? 18 : 14,
+                width: window.innerWidth > 768 ? 40 : 32,
+                height: window.innerWidth > 768 ? 40 : 32,
+                fontSize: window.innerWidth > 768 ? 20 : 16,
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                transition: 'all 0.2s',
-                fontWeight: 'bold'
+                transition: 'all 0.2s'
               }}
               onMouseOver={e => {
-                e.currentTarget.style.backgroundColor = 'rgba(244,67,54,1)';
+                e.currentTarget.style.backgroundColor = 'rgba(244,67,54,0.8)';
                 e.currentTarget.style.transform = 'scale(1.1)';
               }}
               onMouseOut={e => {
-                e.currentTarget.style.backgroundColor = 'rgba(244,67,54,0.8)';
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.7)';
                 e.currentTarget.style.transform = 'none';
               }}
               title="Close"
@@ -530,22 +384,22 @@ const ShortlistViewer = ({ shareToken }) => {
               ×
             </button>
 
-            {/* Media Counter - Mobile Optimized */}
+            {/* Image Counter */}
             <div
               style={{
                 position: 'absolute',
-                bottom: window.innerWidth > 768 ? 15 : 8,
+                bottom: window.innerWidth > 768 ? 20 : 10,
                 left: '50%',
                 transform: 'translateX(-50%)',
                 backgroundColor: 'rgba(0,0,0,0.7)',
                 color: 'white',
-                padding: window.innerWidth > 768 ? '6px 12px' : '4px 8px',
-                borderRadius: '12px',
-                fontSize: window.innerWidth > 768 ? '14px' : '12px',
+                padding: '6px 12px',
+                borderRadius: '16px',
+                fontSize: '14px',
                 fontWeight: 500
               }}
             >
-              {mediaGallery.index + 1} of {mediaGallery.media.length}
+              {imageGallery.index + 1} of {imageGallery.images.length}
             </div>
           </div>
         </div>
