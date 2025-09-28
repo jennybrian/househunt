@@ -374,7 +374,7 @@ const ShortlistViewer = ({ shareToken }) => {
             }}
             onClick={e => e.stopPropagation()}
           >
-            {/* Previous Button - Responsive Size */}
+            {/* Previous Button */}
             <button
               onClick={() =>
                 setMediaGallery(g => ({
@@ -452,7 +452,7 @@ const ShortlistViewer = ({ shareToken }) => {
               );
             })()}
 
-            {/* Next Button - Responsive Size */}
+            {/* Next Button */}
             <button
               onClick={() =>
                 setMediaGallery(g => ({
@@ -492,7 +492,7 @@ const ShortlistViewer = ({ shareToken }) => {
               ›
             </button>
 
-            {/* Close Button - Responsive Size */}
+            {/* Close Button */}
             <button
               onClick={() => setMediaGallery({ media: [], index: 0 })}
               style={{
