@@ -1152,7 +1152,7 @@ const PropertyGallery = () => {
         </div>
       )}
 
-      {/* Expanded Property Modal */}
+      {/* Expanded Property Modal - Mobile Optimized */}
       {expandedProperty && (
         <div
           style={{
@@ -1166,7 +1166,8 @@ const PropertyGallery = () => {
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 3000,
-            padding: '20px'
+            padding: window.innerWidth > 768 ? '20px' : '10px',
+            overflowY: 'auto'
           }}
           onClick={() => setExpandedProperty(null)}
         >
@@ -1174,13 +1175,14 @@ const PropertyGallery = () => {
             style={{
               background: '#fff',
               borderRadius: 12,
-              maxWidth: 500,
+              maxWidth: window.innerWidth > 768 ? 500 : '95vw',
               width: '100%',
-              maxHeight: '90vh',
+              maxHeight: window.innerWidth > 768 ? '85vh' : '90vh',
               overflowY: 'auto',
-              padding: 24,
+              padding: window.innerWidth > 768 ? 24 : 16,
               boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-              position: 'relative'
+              position: 'relative',
+              margin: 'auto'
             }}
             onClick={e => e.stopPropagation()}
           >
@@ -1188,26 +1190,34 @@ const PropertyGallery = () => {
               onClick={() => setExpandedProperty(null)}
               style={{
                 position: 'absolute',
-                top: 12,
-                right: 12,
+                top: window.innerWidth > 768 ? 12 : 8,
+                right: window.innerWidth > 768 ? 12 : 8,
                 background: '#f44336',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '50%',
-                width: 30,
-                height: 30,
-                fontSize: 16,
+                width: window.innerWidth > 768 ? 32 : 28,
+                height: window.innerWidth > 768 ? 32 : 28,
+                fontSize: window.innerWidth > 768 ? 18 : 16,
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                zIndex: 1,
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
               }}
               title="Close"
             >
               ×
             </button>
 
-            <h2 style={{ marginBottom: 16, paddingRight: 40 }}>{expandedProperty.title}</h2>
+            <h2 style={{ 
+              marginBottom: 16, 
+              paddingRight: 40,
+              fontSize: window.innerWidth > 768 ? '24px' : '20px'
+            }}>
+              {expandedProperty.title}
+            </h2>
             
             {(() => {
               const expandedMedia = getPropertyMedia(expandedProperty);
@@ -1221,7 +1231,8 @@ const PropertyGallery = () => {
                   alt={expandedProperty.title}
                   style={{
                     width: '100%',
-                    height: '200px',
+                    height: 'auto',
+                    maxHeight: window.innerWidth > 768 ? '250px' : '180px',
                     objectFit: 'cover',
                     borderRadius: 8,
                     marginBottom: 16
@@ -1233,7 +1244,8 @@ const PropertyGallery = () => {
                   controls
                   style={{
                     width: '100%',
-                    height: '200px',
+                    height: 'auto',
+                    maxHeight: window.innerWidth > 768 ? '250px' : '180px',
                     objectFit: 'cover',
                     borderRadius: 8,
                     marginBottom: 16,
@@ -1243,7 +1255,10 @@ const PropertyGallery = () => {
               );
             })()}
 
-            <div style={{ lineHeight: '1.6' }}>
+            <div style={{ 
+              lineHeight: '1.6',
+              fontSize: window.innerWidth > 768 ? '15px' : '14px'
+            }}>
               <p><strong>Address:</strong> {expandedProperty.address}</p>
               <p><strong>Type:</strong> {expandedProperty.type}</p>
               <p><strong>Price:</strong> {formatPrice(expandedProperty.price)}</p>
@@ -1264,6 +1279,211 @@ const PropertyGallery = () => {
                 }
                 return null;
               })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Enhanced Media Gallery Modal - Mobile Optimized */}
+      {imageGallery.images.length > 0 && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.9)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 4000,
+            padding: window.innerWidth > 768 ? '60px 20px 60px 20px' : '50px 5px 50px 5px'
+          }}
+          onClick={() => setImageGallery({ images: [], index: 0 })}
+        >
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Previous Button - Mobile Optimized */}
+            <button
+              onClick={() =>
+                setImageGallery(g => ({
+                  ...g,
+                  index: g.index > 0 ? g.index - 1 : g.images.length - 1
+                }))
+              }
+              style={{
+                position: 'absolute',
+                left: window.innerWidth > 768 ? 20 : 5,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'rgba(0,0,0,0.6)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '50%',
+                width: window.innerWidth > 768 ? 40 : 28,
+                height: window.innerWidth > 768 ? 40 : 28,
+                fontSize: window.innerWidth > 768 ? 20 : 14,
+                cursor: 'pointer',
+                zIndex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.6)';
+                e.currentTarget.style.transform = 'translateY(-50%)';
+              }}
+              title="Previous"
+            >
+              ‹
+            </button>
+
+            {/* Main Media Display - Fixed Sizing */}
+            {(() => {
+              const currentMediaUrl = imageGallery.images[imageGallery.index];
+              const isVideo = currentMediaUrl && (
+                currentMediaUrl.includes('.mp4') || 
+                currentMediaUrl.includes('.webm') || 
+                currentMediaUrl.includes('.mov') ||
+                currentMediaUrl.includes('video/upload')
+              );
+              
+              return isVideo ? (
+                <video
+                  src={currentMediaUrl}
+                  controls
+                  autoPlay
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    width: 'auto',
+                    height: 'auto',
+                    borderRadius: '8px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                    background: '#000'
+                  }}
+                />
+              ) : (
+                <img
+                  src={currentMediaUrl}
+                  alt={`Property media ${imageGallery.index + 1}`}
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    width: 'auto',
+                    height: 'auto',
+                    borderRadius: '8px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                    background: '#fff'
+                  }}
+                />
+              );
+            })()}
+
+            {/* Next Button - Mobile Optimized */}
+            <button
+              onClick={() =>
+                setImageGallery(g => ({
+                  ...g,
+                  index: g.index < g.images.length - 1 ? g.index + 1 : 0
+                }))
+              }
+              style={{
+                position: 'absolute',
+                right: window.innerWidth > 768 ? 20 : 5,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'rgba(0,0,0,0.6)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '50%',
+                width: window.innerWidth > 768 ? 40 : 28,
+                height: window.innerWidth > 768 ? 40 : 28,
+                fontSize: window.innerWidth > 768 ? 20 : 14,
+                cursor: 'pointer',
+                zIndex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.6)';
+                e.currentTarget.style.transform = 'translateY(-50%)';
+              }}
+              title="Next"
+            >
+              ›
+            </button>
+
+            {/* Close Button - Mobile Optimized */}
+            <button
+              onClick={() => setImageGallery({ images: [], index: 0 })}
+              style={{
+                position: 'absolute',
+                top: window.innerWidth > 768 ? 15 : 8,
+                right: window.innerWidth > 768 ? 15 : 8,
+                backgroundColor: 'rgba(244,67,54,0.8)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '50%',
+                width: window.innerWidth > 768 ? 35 : 26,
+                height: window.innerWidth > 768 ? 35 : 26,
+                fontSize: window.innerWidth > 768 ? 18 : 14,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+                fontWeight: 'bold',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(244,67,54,1)';
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(244,67,54,0.8)';
+                e.currentTarget.style.transform = 'none';
+              }}
+              title="Close"
+            >
+              ×
+            </button>
+
+            {/* Media Counter - Mobile Optimized */}
+            <div style={{
+              position: 'absolute',
+              bottom: window.innerWidth > 768 ? 15 : 8,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: 'rgba(0,0,0,0.7)',
+              color: 'white',
+              padding: window.innerWidth > 768 ? '6px 12px' : '4px 8px',
+              borderRadius: '12px',
+              fontSize: window.innerWidth > 768 ? '14px' : '12px',
+              fontWeight: 500
+            }}>
+              {imageGallery.index + 1} of {imageGallery.images.length}
             </div>
           </div>
         </div>
