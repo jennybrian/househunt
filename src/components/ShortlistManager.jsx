@@ -431,7 +431,7 @@ const ShortlistManager = () => {
             }}
             onClick={e => e.stopPropagation()}
           >
-            {/* Previous Button */}
+            {/* Previous Button - Mobile Optimized */}
             <button
               onClick={() =>
                 setSelectedMediaGallery(g => ({
@@ -441,24 +441,36 @@ const ShortlistManager = () => {
               }
               style={{
                 position: 'absolute',
-                left: 20,
+                left: window.innerWidth > 768 ? 20 : 5,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                background: 'rgba(0,0,0,0.7)',
+                background: 'rgba(0,0,0,0.6)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '50%',
-                width: 48,
-                height: 48,
-                fontSize: 24,
+                width: window.innerWidth > 768 ? 40 : 28,
+                height: window.innerWidth > 768 ? 40 : 28,
+                fontSize: window.innerWidth > 768 ? 20 : 14,
                 cursor: 'pointer',
-                zIndex: 1
+                zIndex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.6)';
+                e.currentTarget.style.transform = 'translateY(-50%)';
               }}
             >
               ‹
             </button>
 
-            {/* Main Media Display */}
+            {/* Main Media Display - Fixed Sizing */}
             {(() => {
               const currentMediaUrl = selectedMediaGallery.media[selectedMediaGallery.index];
               const isVideo = currentMediaUrl && (
@@ -474,8 +486,10 @@ const ShortlistManager = () => {
                   controls
                   autoPlay
                   style={{
-                    maxWidth: '80vw',
-                    maxHeight: '80vh',
+                    maxWidth: window.innerWidth > 768 ? '75vw' : '90vw',
+                    maxHeight: window.innerWidth > 768 ? '70vh' : '60vh',
+                    width: 'auto',
+                    height: 'auto',
                     borderRadius: '8px',
                     boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
                     background: '#000'
@@ -486,8 +500,10 @@ const ShortlistManager = () => {
                   src={currentMediaUrl}
                   alt={`Shortlist media ${selectedMediaGallery.index + 1}`}
                   style={{
-                    maxWidth: '80vw',
-                    maxHeight: '80vh',
+                    maxWidth: window.innerWidth > 768 ? '75vw' : '90vw',
+                    maxHeight: window.innerWidth > 768 ? '70vh' : '60vh',
+                    width: 'auto',
+                    height: 'auto',
                     borderRadius: '8px',
                     boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
                     background: '#fff'
@@ -496,7 +512,7 @@ const ShortlistManager = () => {
               );
             })()}
 
-            {/* Next Button */}
+            {/* Next Button - Mobile Optimized */}
             <button
               onClick={() =>
                 setSelectedMediaGallery(g => ({
@@ -506,54 +522,79 @@ const ShortlistManager = () => {
               }
               style={{
                 position: 'absolute',
-                right: 20,
+                right: window.innerWidth > 768 ? 20 : 5,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                background: 'rgba(0,0,0,0.7)',
+                background: 'rgba(0,0,0,0.6)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '50%',
-                width: 48,
-                height: 48,
-                fontSize: 24,
+                width: window.innerWidth > 768 ? 40 : 28,
+                height: window.innerWidth > 768 ? 40 : 28,
+                fontSize: window.innerWidth > 768 ? 20 : 14,
                 cursor: 'pointer',
-                zIndex: 1
+                zIndex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.6)';
+                e.currentTarget.style.transform = 'translateY(-50%)';
               }}
             >
               ›
             </button>
 
-            {/* Close Button */}
+            {/* Close Button - Mobile Optimized */}
             <button
               onClick={() => setSelectedMediaGallery({ media: [], index: 0 })}
               style={{
                 position: 'absolute',
-                top: 20,
-                right: 20,
-                backgroundColor: 'rgba(0,0,0,0.7)',
+                top: window.innerWidth > 768 ? 15 : 8,
+                right: window.innerWidth > 768 ? 15 : 8,
+                backgroundColor: 'rgba(244,67,54,0.8)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '50%',
-                width: 40,
-                height: 40,
-                fontSize: 20,
-                cursor: 'pointer'
+                width: window.innerWidth > 768 ? 35 : 26,
+                height: window.innerWidth > 768 ? 35 : 26,
+                fontSize: window.innerWidth > 768 ? 18 : 14,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+                fontWeight: 'bold'
+              }}
+              onMouseOver={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(244,67,54,1)';
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.backgroundColor = 'rgba(244,67,54,0.8)';
+                e.currentTarget.style.transform = 'none';
               }}
             >
               ×
             </button>
 
-            {/* Media Counter */}
+            {/* Media Counter - Mobile Optimized */}
             <div style={{
               position: 'absolute',
-              bottom: 20,
+              bottom: window.innerWidth > 768 ? 15 : 8,
               left: '50%',
               transform: 'translateX(-50%)',
               backgroundColor: 'rgba(0,0,0,0.7)',
               color: 'white',
-              padding: '6px 12px',
-              borderRadius: '16px',
-              fontSize: '14px',
+              padding: window.innerWidth > 768 ? '6px 12px' : '4px 8px',
+              borderRadius: '12px',
+              fontSize: window.innerWidth > 768 ? '14px' : '12px',
               fontWeight: 500
             }}>
               {selectedMediaGallery.index + 1} of {selectedMediaGallery.media.length}
