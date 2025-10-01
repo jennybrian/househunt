@@ -1,16 +1,27 @@
+// src/App.jsx
 import React, { useState } from "react";
 import PropertyImageManager from "./components/PropertyImageManager";
 import PropertyGallery from "./components/PropertyGallery";
 import ShortlistManager from "./components/ShortlistManager";
 import ShortlistRouter from "./components/ShortlistRouter";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider } from "./contexts/AuthContext";
 
-// You can use any royalty-free property image or your own asset here
 const backgroundUrl =
   "https://images.unsplash.com/photo-1596654907140-cac29b49fca4?auto=format&fit=crop&w=1200&q=80";
 
 function App() {
+  return (
+    <AuthProvider>
+      <ProtectedRoute>
+        <MainApp />
+      </ProtectedRoute>
+    </AuthProvider>
+  );
+}
+
+function MainApp() {
   const [activeTab, setActiveTab] = useState("test");
-  const [testResults, setTestResults] = useState([]);
 
   // Check if we're viewing a shortlist
   const isShortlistUrl = window.location.pathname.includes('/shortlist/') || window.location.hash.includes('/shortlist/');
@@ -19,30 +30,6 @@ function App() {
   if (isShortlistUrl) {
     return <ShortlistRouter />;
   }
-
-  // Dummy test functions for demonstration
-  const testFirebaseConnection = () => {
-    setTestResults((prev) => [
-      ...prev,
-      { timestamp: new Date().toLocaleTimeString(), message: "Firebase connection tested!" },
-    ]);
-  };
-
-  const testCloudinary = () => {
-    setTestResults((prev) => [
-      ...prev,
-      { timestamp: new Date().toLocaleTimeString(), message: "Cloudinary tested!" },
-    ]);
-  };
-
-  const testFirestoreOperations = () => {
-    setTestResults((prev) => [
-      ...prev,
-      { timestamp: new Date().toLocaleTimeString(), message: "Firestore operations tested!" },
-    ]);
-  };
-
-  const clearResults = () => setTestResults([]);
 
   // Theme colors
   const theme = {
@@ -57,7 +44,7 @@ function App() {
     shadow: "0 4px 24px rgba(0,0,0,0.08)",
   };
 
-  // Navigation button component to maintain consistency
+  // Navigation button component
   const NavButton = ({ isActive, onClick, children, emoji }) => (
     <button
       onClick={onClick}
@@ -167,7 +154,7 @@ function App() {
             justifyContent: "center",
             gap: 16,
             marginBottom: 32,
-            flexWrap: "wrap", // Allow wrapping on smaller screens
+            flexWrap: "wrap",
           }}
         >
           <NavButton 

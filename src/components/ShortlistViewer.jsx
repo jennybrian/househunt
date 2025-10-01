@@ -22,7 +22,7 @@ const ShortlistViewer = ({ shareToken }) => {
   // Helper function to get all media (photos + videos) for a property
   const getPropertyMedia = (property) => {
     const media = [];
-    
+
     // Add photos with type indicator
     if (property.photos && property.photos.length > 0) {
       property.photos.forEach((url) => {
@@ -32,7 +32,7 @@ const ShortlistViewer = ({ shareToken }) => {
         });
       });
     }
-    
+
     // Add videos with type indicator
     if (property.videos && property.videos.length > 0) {
       property.videos.forEach((url) => {
@@ -42,7 +42,7 @@ const ShortlistViewer = ({ shareToken }) => {
         });
       });
     }
-    
+
     return media;
   };
 
@@ -70,6 +70,72 @@ const ShortlistViewer = ({ shareToken }) => {
     }
   };
 
+  // -------------------------
+  // Obfuscation helpers
+  // -------------------------
+  // Simple hash to produce numeric seed from string
+  function stringHashToInt(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      // charCode + bitwise mix
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0; // convert to 32bit integer
+    }
+    return Math.abs(hash);
+  }
+
+  // small deterministic PRNG using multiplicative congruential generator
+  function seededRandom(seed) {
+    // returns function that yields pseudo-random number in [0,1)
+    let state = seed % 2147483647;
+    if (state <= 0) state += 2147483646;
+    return function() {
+      state = (state * 16807) % 2147483647;
+      return (state - 1) / 2147483646;
+    };
+  }
+
+  // generate n uppercase letters using seeded RNG
+  function genLetters(n, randFn) {
+    const letters = [];
+    for (let i = 0; i < n; i++) {
+      const idx = Math.floor(randFn() * 26); // 0..25
+      letters.push(String.fromCharCode(65 + idx));
+    }
+    return letters.join('');
+  }
+
+  // Insert an array of chars into title at pseudo-random positions (deterministic)
+  function insertCharsIntoTitle(title, chars, randFn) {
+    if (!title || title.length === 0) return chars; // fallback
+    const titleChars = title.split('');
+    // We'll insert characters at positions spread across title length (including start/end)
+    for (let i = 0; i < chars.length; i++) {
+      // pick position between 0..titleChars.length (insertion before that index)
+      const pos = Math.floor(randFn() * (titleChars.length + 1));
+      titleChars.splice(pos, 0, chars[i]);
+    }
+    return titleChars.join('');
+  }
+
+  /**
+   * generateObfuscatedTitle:
+   * - deterministic for given property.id + shareToken
+   * - generates 6 uppercase letters and inserts them at pseudo-random positions in the title
+   * - keeps readability somewhat intact while making exact-match searches harder
+   */
+  function generateObfuscatedTitle(title, propertyId) {
+    const key = `${propertyId || ''}:${shareToken || ''}`;
+    const seed = stringHashToInt(key || title || 'fallback');
+    const rand = seededRandom(seed);
+    const letters = genLetters(6, rand);
+    const obfuscated = insertCharsIntoTitle(title || 'Property', letters, rand);
+    return obfuscated;
+  }
+
+  // -------------------------
+  // Rendering states (loading, error, empty)
+  // -------------------------
   if (loading) {
     return (
       <div style={{
@@ -126,6 +192,9 @@ const ShortlistViewer = ({ shareToken }) => {
     );
   }
 
+  // -------------------------
+  // Main UI
+  // -------------------------
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
       {/* Contact/Lead Section */}
@@ -141,10 +210,10 @@ const ShortlistViewer = ({ shareToken }) => {
         <p style={{ fontFamily: 'Inter, Nunito, Arial, sans-serif', fontSize: '15px', color: '#333', margin: '16px 0 0 0' }}>
           {CONTACT_MSG.split("\n").map((line, i) => (
             <span key={i}>
-            {line}
-            <br />
+              {line}
+              <br />
             </span>
-            ))}
+          ))}
         </p>
       </div>
 
@@ -162,29 +231,29 @@ const ShortlistViewer = ({ shareToken }) => {
           {shortlist.properties.map((property, index) => {
             const allMedia = getPropertyMedia(property);
             const hasMedia = allMedia.length > 0;
-            
+
             return (
               <div
                 key={property.id}
                 style={{
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                    backgroundColor: "white",
-                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                    position: "relative",
-                    display: "flex",
-                    flexDirection: "column",
-                    transition: "box-shadow 0.2s, transform 0.2s",
-                    cursor: hasMedia ? "pointer" : "default",
+                  border: "1px solid #ddd",
+                  borderRadius: "8px",
+                  overflow: "hidden",
+                  backgroundColor: "white",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  position: "relative",
+                  display: "flex",
+                  flexDirection: "column",
+                  transition: "box-shadow 0.2s, transform 0.2s",
+                  cursor: hasMedia ? "pointer" : "default",
                 }}
                 onMouseOver={(e) => {
-                    e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.18)";
-                    e.currentTarget.style.transform = "translateY(-4px) scale(1.01)";
+                  e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.18)";
+                  e.currentTarget.style.transform = "translateY(-4px) scale(1.01)";
                 }}
-                 onMouseOut={(e) => {
-                    e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
-                    e.currentTarget.style.transform = "none";
+                onMouseOut={(e) => {
+                  e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+                  e.currentTarget.style.transform = "none";
                 }}
               >
                 {/* Property Number Badge */}
@@ -253,7 +322,7 @@ const ShortlistViewer = ({ shareToken }) => {
                             loop
                           />
                         )}
-                        
+
                         {/* Video indicator overlay */}
                         {mediaItem.type === 'video' && (
                           <div style={{
@@ -274,7 +343,7 @@ const ShortlistViewer = ({ shareToken }) => {
                         )}
                       </div>
                     ))}
-                    
+
                     {/* Media count indicator */}
                     {allMedia.length > 3 && (
                       <div style={{
@@ -293,7 +362,7 @@ const ShortlistViewer = ({ shareToken }) => {
                         +{allMedia.length - 3} more
                       </div>
                     )}
-                    
+
                     {/* Mixed media type indicator */}
                     {property.photos && property.videos && (
                       <div style={{
@@ -331,7 +400,7 @@ const ShortlistViewer = ({ shareToken }) => {
                 {/* Property Teaser Details */}
                 <div style={{ padding: '18px 16px 24px 16px', flex: 1 }}>
                   <h3 style={{ margin: '0px 0px 8px', fontSize: '18px', fontFamily: 'Inter, Nunito, Arial, sans-serif', color: '#000000' }}>
-                    {property.title}
+                    {generateObfuscatedTitle(property.title, property.id)}
                   </h3>
                   <div style={{ fontFamily: 'Inter, Nunito, Arial, sans-serif', fontSize: '14px', color: '#555', marginBottom: '4px 0px; color: rgb(102, 102, 102)' }}>
                     🗺️ {extractGeneralArea(property.address)}
@@ -418,12 +487,12 @@ const ShortlistViewer = ({ shareToken }) => {
             {(() => {
               const currentMediaUrl = mediaGallery.media[mediaGallery.index];
               const isVideo = currentMediaUrl && (
-                currentMediaUrl.includes('.mp4') || 
-                currentMediaUrl.includes('.webm') || 
+                currentMediaUrl.includes('.mp4') ||
+                currentMediaUrl.includes('.webm') ||
                 currentMediaUrl.includes('.mov') ||
                 currentMediaUrl.includes('video/upload')
               );
-              
+
               return isVideo ? (
                 <video
                   src={currentMediaUrl}
