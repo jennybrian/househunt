@@ -5,7 +5,7 @@ import PropertyGallery from "./components/PropertyGallery";
 import ShortlistManager from "./components/ShortlistManager";
 import ShortlistRouter from "./components/ShortlistRouter";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
 const backgroundUrl =
   "https://images.unsplash.com/photo-1596654907140-cac29b49fca4?auto=format&fit=crop&w=1200&q=80";
@@ -22,6 +22,7 @@ function App() {
 
 function MainApp() {
   const [activeTab, setActiveTab] = useState("test");
+  const { currentUser, logout } = useAuth();
 
   // Check if we're viewing a shortlist
   const isShortlistUrl = window.location.pathname.includes('/shortlist/') || window.location.hash.includes('/shortlist/');
@@ -132,8 +133,50 @@ function MainApp() {
             textAlign: "center",
           }}
         >
-          HouseHunt
+          🏡 HouseHunt
         </h1>
+        
+        {/* User Info and Logout */}
+        <div style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 8,
+        }}>
+          <span style={{
+            color: "#666",
+            fontSize: 14,
+            fontWeight: 500,
+          }}>
+            {currentUser?.displayName || currentUser?.email}
+          </span>
+          <button
+            onClick={logout}
+            style={{
+              padding: "6px 16px",
+              background: "#fee",
+              color: "#c33",
+              border: "1px solid #fcc",
+              borderRadius: 8,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 0.2s",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = "#fdd";
+              e.currentTarget.style.transform = "translateY(-1px)";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = "#fee";
+              e.currentTarget.style.transform = "none";
+            }}
+          >
+            Logout
+          </button>
+        </div>
+        
         <p
           style={{
             color: "#3a6e6e",
