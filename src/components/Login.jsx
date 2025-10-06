@@ -307,7 +307,7 @@ function Login() {
               textDecoration: "underline",
             }}
           >
-            {isLogin ? "Sign Up" : "Sign In"}
+            {isLogin ? "" : "Sign In"}
           </button>
         </div>
       </div>
